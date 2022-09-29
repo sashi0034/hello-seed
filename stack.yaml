@@ -1,0 +1,18 @@
+# ビルドに使うactual-stack/stack.yamlのGHCのバージョンが古くHLSに対応していません。
+# そのため、VSCodeのHaskell拡張機能を有効にするため、このstack.yamlを読み込ませます。
+# 実際はactual-stackでビルドします。
+
+# This is stack.yaml for loading HLS
+# This is not true stack.yaml
+# Please build by ''./actual-stack/stack.yaml'
+
+resolver: lts-18.19
+
+packages:
+  - ./hello-seed
+
+extra-deps: []
+
+flags: {}
+
+extra-package-dbs: []

@@ -1,0 +1,11 @@
+
+resolver: lts-9.6
+
+packages:
+  - ../hello-seed
+
+extra-deps: []
+
+flags: {}
+
+extra-package-dbs: []
