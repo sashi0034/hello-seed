@@ -7,7 +7,7 @@ module Main (main) where
 
 import qualified SDL
 import qualified SDL.Image
-import qualified SDLUtil as C
+import qualified SDLWrapper
 
 import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
@@ -31,10 +31,10 @@ initialApp = World
 
 
 main :: IO ()
-main = C.withSDL $ C.withSDLImage $ do
-  C.setHintQuality
-  C.withWindow "Lesson 14" (640, 480) $ \w ->
-    C.withRenderer w $ \r -> do
+main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
+  SDLWrapper.setHintQuality
+  SDLWrapper.withWindow "Lesson 14" (640, 480) $ \w ->
+    SDLWrapper.withRenderer w $ \r -> do
       t <- SDL.Image.loadTexture r "./assets/walk.png"
       let doRender = renderApp r t
       runApp (appLoop doRender) initialApp
@@ -89,10 +89,10 @@ renderApp r t a = do
 
   where
     x = (frame a `div` 8) `mod` 8
-    mask = fromIntegral <$> C.mkRect (x * 48) 0 48 48
+    mask = fromIntegral <$> SDLWrapper.mkRect (x * 48) 0 48 48
 
-    s = C.mkRect 0 0 192 (192 :: Double)
-    w = C.mkRect 0 0 640 480
+    s = SDLWrapper.mkRect 0 0 192 (192 :: Double)
+    w = SDLWrapper.mkRect 0 0 640 480
     pos = floor <$> centerWithin s w
 
 

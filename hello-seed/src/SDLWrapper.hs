@@ -1,4 +1,4 @@
-module SDLUtil where
+module SDLWrapper where
 
 import qualified SDL
 import qualified SDL.Image
