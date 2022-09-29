@@ -35,10 +35,9 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
   SDLWrapper.setHintQuality
   SDLWrapper.withWindow "Lesson 14" (640, 480) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
-      t <- SDL.Image.loadTexture r "./assets/walk.png"
-      let doRender = renderApp r t
-      runApp (appLoop doRender) initialApp
-      SDL.destroyTexture t
+      SDLWrapper.withTexture r "./assets/walk.png" $ \t -> do
+        let doRender = renderApp r t
+        runApp (appLoop doRender) initialApp
 
 
 runApp :: (Monad m) => (World -> m World) -> World -> m ()

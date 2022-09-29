@@ -8,6 +8,7 @@ import Control.Monad.IO.Class (MonadIO)
 import Data.Text              (Text)
 
 import SDL (($=))
+import qualified GHC.IO as SDL
 
 
 -- 参考: https://github.com/palf/haskell-sdl2-examples
@@ -44,6 +45,13 @@ withRenderer w op = do
   r <- SDL.createRenderer w (-1) rendererConfig
   void $ op r
   SDL.destroyRenderer r
+
+
+withTexture :: (MonadIO m) => SDL.Renderer -> SDL.FilePath -> (SDL.Texture -> m a) -> m ()
+withTexture r filePath op = do
+  t <- SDL.Image.loadTexture r filePath
+  void $ op t
+  SDL.destroyTexture t
 
 
 rendererConfig :: SDL.RendererConfig
