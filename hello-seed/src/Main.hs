@@ -23,6 +23,12 @@ data World = World
 data Intent = Idle | Quit
 
 
+data Size = Size
+  { width :: Int
+  , height :: Int
+  }
+
+
 initialApp :: World
 initialApp = World
   { exiting = False
@@ -33,9 +39,9 @@ initialApp = World
 main :: IO ()
 main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
   SDLWrapper.setHintQuality
-  SDLWrapper.withWindow "Lesson 14" (640, 480) $ \w ->
+  SDLWrapper.withWindow "Haskell Test" (640, 480) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
-      SDLWrapper.withTexture r "./assets/walk.png" $ \t -> do
+      SDLWrapper.withTexture r "./assets/blobwob_24x24.png" $ \t -> do
         let doRender = renderApp r t
         runApp (appLoop doRender) initialApp
 
@@ -87,12 +93,16 @@ renderApp r t a = do
   SDL.present r
 
   where
-    x = (frame a `div` 8) `mod` 8
-    mask = fromIntegral <$> SDLWrapper.mkRect (x * 48) 0 48 48
+    frameDuration = 200
+    numFrame = 10
+    cellSize = Size 24 24
+    cellScale = 3
+    x = (frame a `div` frameDuration) `mod` numFrame
+    mask = fromIntegral <$> SDLWrapper.mkRect (x * width cellSize) 0 (width cellSize) (height cellSize)
 
-    s = SDLWrapper.mkRect 0 0 192 (192 :: Double)
-    w = SDLWrapper.mkRect 0 0 640 480
-    pos = floor <$> centerWithin s w
+    renderingSize = SDLWrapper.mkRect 0 0 (fromIntegral $ width cellSize * cellScale) (fromIntegral $ height cellSize * cellScale)
+    windowSize = SDLWrapper.mkRect 0 0 640 480
+    pos = floor <$> centerWithin renderingSize windowSize
 
 
 centerWithin :: (Fractional a) => SDL.Rectangle a -> SDL.Rectangle a -> SDL.Rectangle a
