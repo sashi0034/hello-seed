@@ -15,5 +15,6 @@ executable hello-seed
                      , sdl2
                      , sdl2-image
                      , text
+                     , StateVar
   default-language:    Haskell2010
 
