@@ -16,6 +16,7 @@ import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable   (foldl')
 import Data.StateVar
+import ImageRsc
 
 
 main :: IO ()
@@ -23,8 +24,8 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
   SDLWrapper.setHintQuality
   SDLWrapper.withWindow "Haskell Test" (640, 480) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
-      SDLWrapper.withTexture r "./assets/blobwob_24x24.png" $ \t -> do            
-        runApp (appLoop $ renderApp r t) World.initialApp
+      ImageRsc.loadImageRsc r $ \imageRsc -> do
+        runApp (appLoop $ renderApp r imageRsc) World.initialApp
 
 
 runApp :: (Monad m) => (World -> m World) -> World -> m ()
@@ -59,13 +60,13 @@ stepFrame :: World -> World
 stepFrame a = a { frame = frame a + 1 }
 
 
-renderApp :: (MonadIO m) => SDL.Renderer -> SDL.Texture -> World -> m ()
-renderApp r t a = do
+renderApp :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
+renderApp r imageRsc a = do
   let renderColor = SDL.rendererDrawColor r
   renderColor $= (SDL.V4 100 100 100 255)
   
   SDL.clear r
-  SDL.copy r t (Just mask) (Just dest)
+  SDL.copy r (blobwob_24x24 imageRsc) (Just mask) (Just dest)
   SDL.present r
 
   where
