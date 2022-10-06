@@ -18,8 +18,11 @@ data ImageRsc = ImageRsc
 
 loadImageRsc :: (MonadIO m) => SDL.Renderer -> (ImageRsc -> m a) -> m ()
 loadImageRsc r op = 
-  SDLWrapper.withTexture r "./assets/blobwob_24x24.png" $ \t0 -> 
-  SDLWrapper.withTexture r "./assets/tree_16x16.png" $ \t1 -> 
-    void $ op $ ImageRsc t0 t1
+  SDLWrapper.withTexture r "./assets/blobwob_24x24.png" $ \blobwob_24x24' -> 
+  SDLWrapper.withTexture r "./assets/tree_16x16.png" $ \tree_16x16' -> 
+    void $ op (ImageRsc 
+      { blobwob_24x24 = blobwob_24x24'
+      , tree_16x16 = tree_16x16'
+      })
 
 

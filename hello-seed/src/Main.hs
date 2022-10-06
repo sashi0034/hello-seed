@@ -25,7 +25,8 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
   SDLWrapper.withWindow "Haskell Test" (640, 480) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
       ImageRsc.loadImageRsc r $ \imageRsc -> do
-        runApp (appLoop $ renderApp r imageRsc) World.initialApp
+        let app = World.initialApp
+        runApp (appLoop $ renderApp r imageRsc) app
 
 
 runApp :: (Monad m) => (World -> m World) -> World -> m ()
@@ -38,33 +39,51 @@ repeatUntil f p = go
 
 
 appLoop :: (MonadIO m) => (World -> m ())-> World -> m World
-appLoop r a
-  = updateApp a <$> InputIntent.pollIntents
-  >>= \a' -> a' <$ r a'
+appLoop r a = do
+  intents <- InputIntent.pollIntents
+  a' <- updateApp a intents
+  r a'
+  return a'
 
 
-updateApp :: World -> [InputIntent] -> World
-updateApp a = stepFrame . foldl' applyIntent a
+
+updateApp ::(MonadIO  m) =>  World -> [InputIntent] -> m World
+updateApp a intents = do 
+  a' <- applyIntents a intents
+  stepFrame a'
+
+
+applyIntents :: (MonadIO  m) => World -> [InputIntent] -> m World
+applyIntents a [] = return a
+applyIntents a (intent:intents) = do 
+  let a' = applyIntent a intent
+  applyIntents a' intents
 
 
 applyIntent :: World -> InputIntent -> World
 applyIntent a InputIntent.Quit = a { exiting = True }
-applyIntent a InputIntent.Left = a { playerPos = Pos (-2 + (x $ playerPos a)) (y $ playerPos a) }
-applyIntent a InputIntent.Right = a { playerPos = Pos (2 + (x $ playerPos a)) (y $ playerPos a) }
-applyIntent a InputIntent.Up = a { playerPos = Pos (x $ playerPos a) (-2 + (y $ playerPos a)) }
-applyIntent a InputIntent.Down = a { playerPos = Pos (x $ playerPos a) (2 + (y $ playerPos a)) }
+applyIntent a InputIntent.Left = movePlayer a $ Vec.Pos (-1) (0)
+applyIntent a InputIntent.Right = movePlayer a $ Vec.Pos (1) (0)
+applyIntent a InputIntent.Up = movePlayer a $ Vec.Pos (0) (-1)
+applyIntent a InputIntent.Down = movePlayer a $ Vec.Pos (0) (1)
 applyIntent a InputIntent.Idle = a
 
 
-stepFrame :: World -> World
-stepFrame a = a { frame = frame a + 1 }
+movePlayer :: World -> Vec.Pos -> World
+movePlayer a deltaPos = a { playerPos = Pos (x deltaPos + x currPos) (y deltaPos + y currPos) }
+  where
+    currPos = playerPos a
+
+
+stepFrame :: (MonadIO m) => World -> m World
+stepFrame a = return a { frame = frame a + 1 }
 
 
 renderApp :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
 renderApp r imageRsc a = do
   let renderColor = SDL.rendererDrawColor r
-  renderColor $= (SDL.V4 100 100 100 255)
-  
+  renderColor $= SDL.V4 100 100 100 255
+
   SDL.clear r
   SDL.copy r (blobwob_24x24 imageRsc) (Just mask) (Just dest)
   SDL.present r
