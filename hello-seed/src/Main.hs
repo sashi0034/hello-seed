@@ -6,7 +6,6 @@
 module Main (main) where
 
 import qualified SDL
-import qualified SDL.Image
 import qualified SDLWrapper
 import InputIntent
 import Vec
@@ -14,9 +13,10 @@ import World
 
 import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
-import Data.Foldable   (foldl')
 import Data.StateVar
 import ImageRsc
+import MainScene.MainScene (MainScene (player))
+import MainScene.Player
 
 
 main :: IO ()
@@ -25,7 +25,7 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
   SDLWrapper.withWindow "Haskell Test" (640, 480) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
       ImageRsc.loadImageRsc r $ \imageRsc -> do
-        let app = World.initialApp
+        let app = World.initialWorld
         runApp (appLoop $ renderApp r imageRsc) app
 
 
@@ -61,18 +61,20 @@ applyIntents a (intent:intents) = do
 
 
 applyIntent :: World -> InputIntent -> World
-applyIntent a InputIntent.Quit = a { exiting = True }
-applyIntent a InputIntent.Left = movePlayer a $ Vec.Pos (-1) (0)
-applyIntent a InputIntent.Right = movePlayer a $ Vec.Pos (1) (0)
-applyIntent a InputIntent.Up = movePlayer a $ Vec.Pos (0) (-1)
-applyIntent a InputIntent.Down = movePlayer a $ Vec.Pos (0) (1)
-applyIntent a InputIntent.Idle = a
+applyIntent world InputIntent.Quit = world { exiting = True }
+applyIntent world InputIntent.Left = movePlayer world $ Vec.Pos (-1) (0)
+applyIntent world InputIntent.Right = movePlayer world $ Vec.Pos (1) (0)
+applyIntent world InputIntent.Up = movePlayer world $ Vec.Pos (0) (-1)
+applyIntent world InputIntent.Down = movePlayer world $ Vec.Pos (0) (1)
+applyIntent world InputIntent.Idle = world
 
 
 movePlayer :: World -> Vec.Pos -> World
-movePlayer a deltaPos = a { playerPos = Pos (x deltaPos + x currPos) (y deltaPos + y currPos) }
+movePlayer world deltaPos = world { scene = scene' {player = player'{pos = Pos (x deltaPos + x currPos) (y deltaPos + y currPos)} } }
   where
-    currPos = playerPos a
+    scene' = scene world
+    player' = player scene'
+    currPos = pos player'
 
 
 stepFrame :: (MonadIO m) => World -> m World
@@ -80,7 +82,7 @@ stepFrame a = return a { frame = frame a + 1 }
 
 
 renderApp :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
-renderApp r imageRsc a = do
+renderApp r imageRsc world = do
   let renderColor = SDL.rendererDrawColor r
   renderColor $= SDL.V4 100 100 100 255
 
@@ -93,7 +95,10 @@ renderApp r imageRsc a = do
     numFrame = 10
     cellSize = Size 24 24
     cellScale = 3
-    srcX = (frame a `div` frameDuration) `mod` numFrame
+    srcX = (frame world `div` frameDuration) `mod` numFrame
     mask = fromIntegral <$> SDLWrapper.mkRect (srcX * width cellSize) 0 (width cellSize) (height cellSize)
-    dest = fromIntegral <$> SDLWrapper.mkRect (x $ playerPos a) (y $ playerPos a) (cellScale * width cellSize) (cellScale * height cellSize)
-
+    dest = fromIntegral <$> SDLWrapper.mkRect (x playerPos) (y playerPos) (cellScale * width cellSize) (cellScale * height cellSize)
+      where
+        scene' = scene world
+        player' = player scene'
+        playerPos = pos player'

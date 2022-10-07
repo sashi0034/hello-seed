@@ -5,20 +5,21 @@
 
 module World
   ( World(..)
-  , initialApp
+  , initialWorld
   ) where
     
-import qualified Vec
+import Vec
+import MainScene.MainScene
 
 data World = World
   { exiting :: Bool
   , frame   :: Int
-  , playerPos :: Vec.Pos
+  , scene :: MainScene
   }
 
-initialApp :: World
-initialApp = World
+initialWorld :: World
+initialWorld = World
   { exiting = False
   , frame   = 0
-  , playerPos = Vec.Pos 0 0
+  , scene = initialMainScene
   }
