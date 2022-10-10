@@ -15,8 +15,10 @@ import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
 import Data.StateVar
 import ImageRsc
-import MainScene.MainScene (MainScene (player))
-import MainScene.Player
+import MainScene.MainScene (MainScene (player, MainScene))
+import MainScene.MainSceneBehavior
+import InputState (InputState (intents, InputState), readInput)
+import qualified MainScene.MainSceneBehavior as MainSceneBehavior
 
 
 main :: IO ()
@@ -40,17 +42,20 @@ repeatUntil f p = go
 
 appLoop :: (MonadIO m) => (World -> m ())-> World -> m World
 appLoop r a = do
-  intents <- InputIntent.pollIntents
-  a' <- updateApp a intents
+  input <- InputState.readInput
+  a' <- updateApp a input
   r a'
   return a'
 
 
 
-updateApp ::(MonadIO  m) =>  World -> [InputIntent] -> m World
-updateApp a intents = do 
-  a' <- applyIntents a intents
-  stepFrame a'
+updateApp ::(MonadIO  m) =>  World -> InputState -> m World
+updateApp world input = do
+  world' <- applyIntents world $ intents input
+  world'' <- stepFrame world'
+  scene' <- MainSceneBehavior.updateMainScene world'' input
+  return world'' {scene=scene'}
+  
 
 
 applyIntents :: (MonadIO  m) => World -> [InputIntent] -> m World
@@ -62,19 +67,7 @@ applyIntents a (intent:intents) = do
 
 applyIntent :: World -> InputIntent -> World
 applyIntent world InputIntent.Quit = world { exiting = True }
-applyIntent world InputIntent.Left = movePlayer world $ Vec.Pos (-1) (0)
-applyIntent world InputIntent.Right = movePlayer world $ Vec.Pos (1) (0)
-applyIntent world InputIntent.Up = movePlayer world $ Vec.Pos (0) (-1)
-applyIntent world InputIntent.Down = movePlayer world $ Vec.Pos (0) (1)
-applyIntent world InputIntent.Idle = world
-
-
-movePlayer :: World -> Vec.Pos -> World
-movePlayer world deltaPos = world { scene = scene' {player = player'{pos = Pos (x deltaPos + x currPos) (y deltaPos + y currPos)} } }
-  where
-    scene' = scene world
-    player' = player scene'
-    currPos = pos player'
+applyIntent world _ = world
 
 
 stepFrame :: (MonadIO m) => World -> m World
@@ -87,18 +80,5 @@ renderApp r imageRsc world = do
   renderColor $= SDL.V4 100 100 100 255
 
   SDL.clear r
-  SDL.copy r (blobwob_24x24 imageRsc) (Just mask) (Just dest)
+  MainSceneBehavior.renderMainScene r imageRsc world
   SDL.present r
-
-  where
-    frameDuration = 200
-    numFrame = 10
-    cellSize = Size 24 24
-    cellScale = 3
-    srcX = (frame world `div` frameDuration) `mod` numFrame
-    mask = fromIntegral <$> SDLWrapper.mkRect (srcX * width cellSize) 0 (width cellSize) (height cellSize)
-    dest = fromIntegral <$> SDLWrapper.mkRect (x playerPos) (y playerPos) (cellScale * width cellSize) (cellScale * height cellSize)
-      where
-        scene' = scene world
-        player' = player scene'
-        playerPos = pos player'

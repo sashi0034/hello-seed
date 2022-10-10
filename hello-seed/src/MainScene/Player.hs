@@ -7,6 +7,8 @@ data Player = Player
   , animCount :: Int
   }
 
+
+initialPlayer :: Player
 initialPlayer = Player
   { pos = Pos 10 10
   , animCount = 0
