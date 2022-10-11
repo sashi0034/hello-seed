@@ -1,6 +1,6 @@
 module MainScene.Player where
 
-import Vec
+import Vector
 
 data Player = Player
   { pos :: Pos

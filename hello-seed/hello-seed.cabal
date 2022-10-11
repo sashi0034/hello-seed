@@ -12,7 +12,7 @@ executable hello-seed
   other-modules:       SDLWrapper
                      , InputIntent
                      , InputState
-                     , Vec
+                     , Vector
                      , World
                      , ImageRsc
                      , MainScene.MainScene

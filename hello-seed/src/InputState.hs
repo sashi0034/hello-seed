@@ -7,7 +7,7 @@ module InputState
 
 import qualified SDL.Input
 import InputIntent
-import Vec
+import Vector
 import Control.Monad.IO.Class
 import qualified SDL
 import Linear.Affine as LA

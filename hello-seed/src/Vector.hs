@@ -1,5 +1,5 @@
 
-module Vec where
+module Vector where
 
 data Pos = Pos
   { x :: Int

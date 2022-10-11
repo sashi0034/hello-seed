@@ -8,7 +8,7 @@ module MainScene.PlayerBehavior
 import World
 import MainScene.Player
 import MainScene.MainScene
-import Vec
+import Vector
 import qualified SDL
 import qualified SDLWrapper
 import Control.Monad.IO.Class
@@ -17,7 +17,7 @@ import InputIntent (InputIntent)
 import InputState
 
 
-movePlayer :: World -> Vec.Pos -> Player
+movePlayer :: World -> Pos -> Player
 movePlayer world deltaPos = player'{pos = Pos (x deltaPos + x currPos) (y deltaPos + y currPos)}
   where
     scene' = scene world

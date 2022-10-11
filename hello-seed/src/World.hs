@@ -8,7 +8,7 @@ module World
   , initialWorld
   ) where
     
-import Vec
+import Vector
 import MainScene.MainScene
 
 data World = World
