@@ -8,7 +8,7 @@ module Main (main) where
 import qualified SDL
 import qualified SDLWrapper
 import InputIntent
-import Vector
+import Vec
 import World
 
 import Control.Monad (unless)

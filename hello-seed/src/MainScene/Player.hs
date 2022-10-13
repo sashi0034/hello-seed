@@ -1,16 +1,16 @@
 module MainScene.Player where
 
-import Vector
+import Vec
 
 data Player = Player
-  { pos :: Pos
+  { pos :: VecF
   , animCount :: Int
   }
 
 
 initialPlayer :: Player
 initialPlayer = Player
-  { pos = Pos 10 10
+  { pos = Vec 10 10
   , animCount = 0
   }
 

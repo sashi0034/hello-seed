@@ -7,7 +7,7 @@ module InputState
 
 import qualified SDL.Input
 import InputIntent
-import Vector
+import Vec
 import Control.Monad.IO.Class
 import qualified SDL
 import Linear.Affine as LA
@@ -20,7 +20,7 @@ data InputState = InputState
   }
 
 data MouseState = MouseState
-  { mousePos :: Pos
+  { mousePos :: VecInt
   }
 
 
@@ -43,5 +43,5 @@ readInput = do
 
 convertP (LA.P p) = p
 
-convertV2 :: SDL.V2 CInt -> Pos
-convertV2 (SDL.V2 x y) = Pos (fromIntegral x) (fromIntegral y)
+convertV2 :: SDL.V2 CInt -> VecInt
+convertV2 (SDL.V2 x y) = Vec (fromIntegral x) (fromIntegral y)

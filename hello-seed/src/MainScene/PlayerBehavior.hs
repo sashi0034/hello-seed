@@ -8,7 +8,7 @@ module MainScene.PlayerBehavior
 import World
 import MainScene.Player
 import MainScene.MainScene
-import Vector
+import Vec
 import qualified SDL
 import qualified SDLWrapper
 import Control.Monad.IO.Class
@@ -17,24 +17,24 @@ import InputIntent (InputIntent)
 import InputState
 
 
-movePlayer :: World -> Pos -> Player
-movePlayer world deltaPos = player'{pos = Pos (x deltaPos + x currPos) (y deltaPos + y currPos)}
+movePlayer :: World -> VecF -> Player
+movePlayer world deltaPos = player'{pos = deltaPos ~+ currPos}
   where
     scene' = scene world
     player' = player scene'
     currPos = pos player'
 
 
+
+
 updatePlayer :: (MonadIO m) => World -> InputState -> m Player
 updatePlayer world input = do
-  return  player' {pos = mousePos'}
+  return  player' {pos = toVecF mousePos'}
   where
     scene' = scene world
     player' = player scene'
 
     mousePos' = mousePos $ mouse input
-
-
 
 
 renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
@@ -44,11 +44,11 @@ renderPlayer r imageRsc world = do
   where
     frameDuration = 200
     numFrame = 10
-    cellSize = Size 24 24
+    cellSize = Vec 24 (24 :: Int)
     cellScale = 3
     srcX = (frame world `div` frameDuration) `mod` numFrame
-    mask = fromIntegral <$> SDLWrapper.makeRect (srcX * width cellSize) 0 (width cellSize) (height cellSize)
-    dest = fromIntegral <$> SDLWrapper.makeRect (x playerPos) (y playerPos) (cellScale * width cellSize) (cellScale * height cellSize)
+    mask = fromIntegral <$> SDLWrapper.makeRect (srcX * getX cellSize) 0 (getX cellSize) (getY cellSize)
+    dest = fromIntegral <$> SDLWrapper.makeRect (floor $ getX playerPos) (floor $ getY playerPos) (cellScale * getX cellSize) (cellScale * getY cellSize)
       where
         scene' = scene world
         player' = player scene'
