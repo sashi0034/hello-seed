@@ -27,8 +27,8 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
   SDLWrapper.withWindow "Haskell Test" (640, 480) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
       ImageRsc.loadImageRsc r $ \imageRsc -> do
-        let app = World.initialWorld
-        runApp (appLoop $ renderApp r imageRsc) app
+        let world = World.initialWorld r imageRsc
+        runApp loopApp world
 
 
 runApp :: (Monad m) => (World -> m World) -> World -> m ()
@@ -40,11 +40,11 @@ repeatUntil f p = go
   where go a = f a >>= \b -> unless (p b) (go b)
 
 
-appLoop :: (MonadIO m) => (World -> m ())-> World -> m World
-appLoop r a = do
+loopApp :: (MonadIO m) => World -> m World
+loopApp a = do
   input <- InputState.readInput
   a' <- updateApp a input
-  r a'
+  renderApp a'
   return a'
 
 
@@ -74,11 +74,15 @@ stepFrame :: (MonadIO m) => World -> m World
 stepFrame a = return a { frame = frame a + 1 }
 
 
-renderApp :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
-renderApp r imageRsc world = do
+renderApp :: (MonadIO m) => World -> m ()
+renderApp world = do
   let renderColor = SDL.rendererDrawColor r
   renderColor $= SDL.V4 100 100 100 255
 
   SDL.clear r
-  MainSceneBehavior.renderMainScene r imageRsc world
+  MainSceneBehavior.renderMainScene world
   SDL.present r
+  
+  where
+    r = renderer world
+

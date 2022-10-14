@@ -20,9 +20,14 @@ updateMainScene world input = do
   return scene' { player = player'}
 
 
-renderMainScene  :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
-renderMainScene r imageRsc world = do
-  renderBackground r imageRsc world
-  renderPlayer r imageRsc world
+renderMainScene  :: (MonadIO m) => World -> m ()
+renderMainScene world = do
+  renderBackground r imageRsc' world
+  renderPlayer r imageRsc' world
+
+  where
+    r = renderer world
+    imageRsc' = imageRsc world
+
 
 
