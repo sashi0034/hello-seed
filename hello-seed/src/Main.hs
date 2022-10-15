@@ -11,18 +11,20 @@ import InputIntent
 import World
 
 import Control.Monad (unless)
-import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.StateVar
 import ImageRsc
 import InputState (InputState (intents, InputState), readInput)
 import qualified MainScene.MainSceneBehavior as MainSceneBehavior
 import Vec (Vec(Vec), getY, getX)
+import Data.Time
+import Control.Concurrent (threadDelay)
 
 
 main :: IO ()
 main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
   SDLWrapper.setHintQuality
-  let initialWindowSize = Vec 640 (480 :: Int)
+  let initialWindowSize = Vec 1280 (720 :: Int)
   SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
       ImageRsc.loadImageRsc r $ \imageRsc' -> do
@@ -40,20 +42,41 @@ repeatUntil f p = go
 
 
 loopApp :: (MonadIO m) => World -> m World
-loopApp a = do
-  input <- InputState.readInput
-  a' <- updateApp a input
-  renderApp a'
-  return a'
+loopApp world = do
+  controlFpsInApp world $ do
+    input <- InputState.readInput
+    world' <- updateApp world input
+    renderApp world'
+    return world'
+
+
+controlFpsInApp :: MonadIO m => World -> (m World) -> m World
+controlFpsInApp world process = do
+  loopStartTime <- liftIO getCurrentTime
+  
+  world' <- process
+
+  loopEndTime <- liftIO getCurrentTime
+
+  let deltaTime = diffUTCTime loopEndTime loopStartTime
+  let realDuration = 1000 * 1000 * (fromRational $ toRational deltaTime)
+  let sleepDuration = idealDuration - realDuration
+  
+  liftIO $ threadDelay $ floor sleepDuration
+
+  return world'
+
+  where
+    idealFps = fromIntegral $ baseFps world
+    idealDuration = 1000 * 1000 * ((1 :: Float) / idealFps)
 
 
 
 updateApp ::(MonadIO  m) =>  World -> InputState -> m World
 updateApp world input = do
   world' <- applyIntents world $ intents input
-  world'' <- stepFrame world'
-  scene' <- MainSceneBehavior.updateMainScene world'' input
-  return world'' {scene=scene'}
+  scene' <- MainSceneBehavior.updateMainScene world' input
+  return world' {scene=scene'}
 
 
 
@@ -67,10 +90,6 @@ applyIntents a (intent:intents) = do
 applyIntent :: World -> InputIntent -> World
 applyIntent world InputIntent.Quit = world { exiting = True }
 applyIntent world _ = world
-
-
-stepFrame :: (MonadIO m) => World -> m World
-stepFrame a = return a { frame = frame a + 1 }
 
 
 renderApp :: (MonadIO m) => World -> m ()

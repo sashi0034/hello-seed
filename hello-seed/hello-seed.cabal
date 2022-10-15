@@ -26,5 +26,6 @@ executable hello-seed
                      , text
                      , StateVar
                      , linear
+                     , time
   default-language:    Haskell2010
 

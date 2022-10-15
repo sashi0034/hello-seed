@@ -25,7 +25,10 @@ movePlayer world deltaPos = player'{pos = deltaPos ~+ currPos}
 
 updatePlayer :: (MonadIO m) => World -> InputState -> m Player
 updatePlayer world input = do
-  return  player' {pos = calcNewPos currPos mousePos'}
+  return  player' 
+    { pos = calcNewPos currPos mousePos'
+    , animCount = 1 + animCount player'
+    }
   where
     scene' = scene world
     player' = player scene'
@@ -41,19 +44,21 @@ calcNewPos currPos inputPos
   where 
     deltaVec = inputPos ~- currPos
     normVec = normalize deltaVec
-    minMovable = 2
+    minMovable = 12
 
 
 renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
 renderPlayer r imageRsc world = do
+  liftIO $ print $ animCount'
   SDL.copy r (blobwob_24x24 imageRsc) (Just mask) (Just dest)
 
   where
-    frameDuration = 200
+    frameDuration = 10
     numFrame = 10
     cellSize = Vec 24 (24 :: Int)
     cellScale = 3
-    srcX = (frame world `div` frameDuration) `mod` numFrame
+    animCount' = animCount player'
+    srcX = (animCount' `div` frameDuration) `mod` numFrame
     mask = fromIntegral <$> SDLWrapper.makeRect (srcX * getX cellSize) 0 (getX cellSize) (getY cellSize)
     dest = fromIntegral <$> SDLWrapper.makeRect
       (-(getX cellSize `div` 2) * cellScale + floor (getX playerPos))
@@ -61,8 +66,7 @@ renderPlayer r imageRsc world = do
       (cellScale * getX cellSize)
       (cellScale * getY cellSize)
 
-      where
-        scene' = scene world
-        player' = player scene'
-        playerPos = pos player'
+    scene' = scene world
+    player' = player scene'
+    playerPos = pos player'
 

@@ -8,6 +8,7 @@ import qualified SDL
 import ImageRsc
 import World
 import qualified SDLWrapper
+import Vec
 
 
 
@@ -16,7 +17,8 @@ renderBackground r imageRsc world = do
   SDL.copy r (blue_bg imageRsc) (Nothing) (Just dest)
 
   where
-    dest =  SDLWrapper.makeRect 0 0 640 480
+    dest = SDLWrapper.makeRect 0 0 (fromIntegral $ getX size) (fromIntegral $ getY size)
+    size = windowSize world
     
 
 

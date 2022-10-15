@@ -13,19 +13,21 @@ import ImageRsc (ImageRsc)
 import qualified SDL
 import Vec (VecInt)
 
+
 data World = World
   { exiting :: Bool
-  , frame   :: Int
+  , baseFps :: Int
   , scene :: MainScene
   , renderer :: SDL.Renderer
   , imageRsc :: ImageRsc
   , windowSize :: VecInt
   }
 
+
 initialWorld :: SDL.Renderer -> ImageRsc -> VecInt -> World
 initialWorld renderer' imageRsc' windowSize' = World
   { exiting = False
-  , frame   = 0
+  , baseFps = 60
   , scene = initialMainScene
   , renderer = renderer'
   , imageRsc = imageRsc'
