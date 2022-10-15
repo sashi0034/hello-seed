@@ -23,7 +23,6 @@ updateMainScene world input = do
 renderMainScene  :: (MonadIO m) => World -> m ()
 renderMainScene world = do
   renderBackground r imageRsc' world
-  renderPlayer r imageRsc' world
 
   where
     r = renderer world

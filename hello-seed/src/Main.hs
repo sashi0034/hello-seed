@@ -8,26 +8,25 @@ module Main (main) where
 import qualified SDL
 import qualified SDLWrapper
 import InputIntent
-import Vec
 import World
 
 import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
 import Data.StateVar
 import ImageRsc
-import MainScene.MainScene (MainScene (player, MainScene))
-import MainScene.MainSceneBehavior
 import InputState (InputState (intents, InputState), readInput)
 import qualified MainScene.MainSceneBehavior as MainSceneBehavior
+import Vec (Vec(Vec), getY, getX)
 
 
 main :: IO ()
 main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
   SDLWrapper.setHintQuality
-  SDLWrapper.withWindow "Haskell Test" (640, 480) $ \w ->
+  let initialWindowSize = Vec 640 (480 :: Int)
+  SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
-      ImageRsc.loadImageRsc r $ \imageRsc -> do
-        let world = World.initialWorld r imageRsc
+      ImageRsc.loadImageRsc r $ \imageRsc' -> do
+        let world = World.initialWorld r imageRsc' initialWindowSize
         runApp loopApp world
 
 
@@ -55,12 +54,12 @@ updateApp world input = do
   world'' <- stepFrame world'
   scene' <- MainSceneBehavior.updateMainScene world'' input
   return world'' {scene=scene'}
-  
+
 
 
 applyIntents :: (MonadIO  m) => World -> [InputIntent] -> m World
 applyIntents a [] = return a
-applyIntents a (intent:intents) = do 
+applyIntents a (intent:intents) = do
   let a' = applyIntent a intent
   applyIntents a' intents
 
@@ -82,7 +81,7 @@ renderApp world = do
   SDL.clear r
   MainSceneBehavior.renderMainScene world
   SDL.present r
-  
+
   where
     r = renderer world
 

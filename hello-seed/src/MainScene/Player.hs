@@ -12,7 +12,6 @@ import qualified SDL
 import qualified SDLWrapper
 import Control.Monad.IO.Class
 import ImageRsc
-import InputIntent (InputIntent)
 import InputState
 
 
@@ -24,16 +23,25 @@ movePlayer world deltaPos = player'{pos = deltaPos ~+ currPos}
     currPos = pos player'
 
 
-
-
 updatePlayer :: (MonadIO m) => World -> InputState -> m Player
 updatePlayer world input = do
-  return  player' {pos = toVecF mousePos'}
+  return  player' {pos = calcNewPos currPos mousePos'}
   where
     scene' = scene world
     player' = player scene'
 
-    mousePos' = mousePos $ mouse input
+    currPos = pos player'
+    mousePos' =  toVecF $ mousePos $ mouse input
+
+
+calcNewPos :: Vec Float -> Vec Float -> Vec Float
+calcNewPos currPos inputPos 
+  | sqrMagnitude deltaVec < minMovable * minMovable = inputPos
+  | otherwise = currPos ~+ (normVec ~* minMovable)
+  where 
+    deltaVec = inputPos ~- currPos
+    normVec = normalize deltaVec
+    minMovable = 2
 
 
 renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
