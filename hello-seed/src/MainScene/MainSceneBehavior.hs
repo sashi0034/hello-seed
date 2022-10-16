@@ -6,18 +6,20 @@ import Control.Monad.IO.Class
 import World
 import InputState
 import MainScene.MainScene
-import qualified SDL
-import ImageRsc
-import MainScene.Player (renderPlayer, updatePlayer)
-import MainScene.Background (renderBackground)
+import MainScene.PlayerBehavior (renderPlayer, updatePlayer)
+import MainScene.BackgroundBehavior
 
 
 updateMainScene :: (MonadIO  m) =>  World -> InputState -> m MainScene
 updateMainScene world input = do
   let scene' = scene world
   
+  background' <- updateBackground scene'
   player' <- updatePlayer world input
-  return scene' { player = player'}
+  return scene' 
+    { player = player'
+    , background = background'
+    }
 
 
 renderMainScene  :: (MonadIO m) => World -> m ()

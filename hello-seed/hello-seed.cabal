@@ -18,7 +18,9 @@ executable hello-seed
                      , MainScene.MainScene
                      , MainScene.MainSceneBehavior
                      , MainScene.Player
+                     , MainScene.PlayerBehavior
                      , MainScene.Background
+                     , MainScene.BackgroundBehavior
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:       base
                      , sdl2
