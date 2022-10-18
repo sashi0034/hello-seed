@@ -15,12 +15,15 @@ executable hello-seed
                      , Vec
                      , World
                      , ImageRsc
+                     , Rendering
                      , MainScene.MainScene
                      , MainScene.MainSceneBehavior
                      , MainScene.Player
                      , MainScene.PlayerBehavior
                      , MainScene.Background
                      , MainScene.BackgroundBehavior
+                     , MainScene.MeteorManager
+                     , MainScene.MeteorManagerBehavior
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:       base
                      , sdl2

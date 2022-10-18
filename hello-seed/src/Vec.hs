@@ -23,8 +23,12 @@ type VecF = Vec Float
 type VecInt = Vec Int
 
 
-toVecF :: (Integral a1, Num a2) => Vec a1 -> Vec a2
+toVecF :: VecInt -> VecF
 toVecF v = Vec (fromIntegral $ getX v) (fromIntegral $ getY v)
+
+
+toVecInt :: VecF -> VecInt
+toVecInt v = Vec (floor $ getX v) (floor $ getY v)
 
 
 getX :: Vec a -> a
