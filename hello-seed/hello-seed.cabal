@@ -16,6 +16,7 @@ executable hello-seed
                      , World
                      , ImageRsc
                      , Rendering
+                     , AnimUtil
                      , MainScene.MainScene
                      , MainScene.MainSceneBehavior
                      , MainScene.Player

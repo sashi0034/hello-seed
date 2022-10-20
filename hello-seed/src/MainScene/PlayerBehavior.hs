@@ -16,6 +16,7 @@ import InputState
 import MainScene.Player
 import qualified Rendering
 import Rendering (SrcRect(SrcRect))
+import AnimUtil (calcAnimFrameIndex)
 
 
 movePlayer :: World -> VecF -> Player
@@ -28,7 +29,7 @@ movePlayer world deltaPos = player'{pos = deltaPos ~+ currPos}
 
 updatePlayer :: (MonadIO m) => World -> InputState -> m Player
 updatePlayer world input = do
-  return  player' 
+  return  player'
     { pos = calcNewPos currPos mousePos'
     , animCount = 1 + animCount player'
     }
@@ -41,27 +42,26 @@ updatePlayer world input = do
 
 
 calcNewPos :: Vec Float -> Vec Float -> Vec Float
-calcNewPos currPos inputPos 
+calcNewPos currPos inputPos
   | sqrMagnitude deltaVec < minMovable * minMovable = inputPos
   | otherwise = currPos ~+ (normVec ~* minMovable)
-  where 
+  where
     deltaVec = inputPos ~- currPos
     normVec = normalize deltaVec
     minMovable = 12
 
 
 renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> Player -> m ()
-renderPlayer r imageRsc player' = do
+renderPlayer r rsc player' = do
   --liftIO $ print $ animCount'
-  Rendering.renderPixelartCentral r (blobwob_24x24 imageRsc) dest $ SrcRect src cellSize
+  Rendering.renderPixelartCentral r (blobwob_24x24 rsc) dest $ SrcRect src cellSize
 
   where
     frameDuration = 10
     numFrame = 10
     cellSize = Vec 24 (24 :: Int)
 
-    animCount' = animCount player'
-    srcX = (animCount' `div` frameDuration) `mod` numFrame
-    src = Vec (srcX * getX cellSize) 0
+    srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (animCount player')
+    src = Vec srcX 0
     dest = toVecInt $ pos player'
 

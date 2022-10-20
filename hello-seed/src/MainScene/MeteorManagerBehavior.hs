@@ -6,10 +6,11 @@ import Control.Monad.IO.Class
 import qualified SDL
 import ImageRsc
 import qualified Rendering
-import Vec (toVecInt, Vec (Vec), (~+), getY)
+import Vec (toVecInt, Vec (Vec), (~+), getY, getX)
 import Rendering (SrcRect(SrcRect))
 import Control.Monad
 import System.Random
+import AnimUtil (calcAnimFrameIndex)
 
 
 
@@ -62,7 +63,10 @@ renderMeteor r rsc meteor = do
   where
     cellSize = Vec 16 16
     dest = toVecInt $ currPos meteor
-    src = Vec 0 0
+    frameDuration = 15
+    numFrame = 2
+    srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (animCount meteor)
+    src = Vec srcX 0
 
 
 renderMeteorManager :: MonadIO m => SDL.Renderer -> ImageRsc -> MeteorManager -> m ()
