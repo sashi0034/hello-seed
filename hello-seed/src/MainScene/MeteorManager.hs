@@ -3,14 +3,16 @@ module MainScene.MeteorManager where
 import Vec (VecF)
 
 data Meteor = Meteor
-  { pos :: VecF
+  { currPos :: VecF
   , animCount :: Int }
 
 data MeteorManager = MeteorManager
-  { meteorList :: [] Meteor }
+  { meteorList :: [] Meteor
+  , managerFrameCount :: Int }
 
 
 initialMeteorManager :: MeteorManager
 initialMeteorManager = MeteorManager 
-  { meteorList = [] }
+  { meteorList = []
+  , managerFrameCount = 0 }
 

@@ -8,6 +8,7 @@ import InputState
 import MainScene.MainScene
 import MainScene.PlayerBehavior (renderPlayer, updatePlayer)
 import MainScene.BackgroundBehavior
+import MainScene.MeteorManagerBehavior
 
 
 updateMainScene :: (MonadIO  m) =>  World -> InputState -> m MainScene
@@ -16,20 +17,25 @@ updateMainScene world input = do
   
   background' <- updateBackground scene'
   player' <- updatePlayer world input
+  meteorManager' <- updateMeteorManager scene'
+
   return scene' 
     { player = player'
     , background = background'
+    , meteorManager = meteorManager'
     }
 
 
 renderMainScene  :: (MonadIO m) => World -> m ()
 renderMainScene world = do
-  renderBackground r imageRsc' world
-  renderPlayer r imageRsc' world
+  renderBackground r rsc' world
+  renderPlayer r rsc' $ player scene'
+  renderMeteorManager r rsc' $ meteorManager scene'
 
   where
     r = renderer world
-    imageRsc' = imageRsc world
+    rsc' = imageRsc world
+    scene' = scene world
 
 
 

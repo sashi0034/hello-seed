@@ -28,7 +28,7 @@ initialWorld :: SDL.Renderer -> ImageRsc -> VecInt -> World
 initialWorld renderer' imageRsc' windowSize' = World
   { exiting = False
   , baseFps = 60
-  , scene = initialMainScene
+  , scene = initialMainScene windowSize'
   , renderer = renderer'
   , imageRsc = imageRsc'
   , windowSize = windowSize'

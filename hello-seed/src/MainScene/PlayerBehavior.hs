@@ -50,8 +50,8 @@ calcNewPos currPos inputPos
     minMovable = 12
 
 
-renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
-renderPlayer r imageRsc world = do
+renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> Player -> m ()
+renderPlayer r imageRsc player' = do
   --liftIO $ print $ animCount'
   Rendering.renderPixelartCentral r (blobwob_24x24 imageRsc) dest $ SrcRect src cellSize
 
@@ -63,9 +63,5 @@ renderPlayer r imageRsc world = do
     animCount' = animCount player'
     srcX = (animCount' `div` frameDuration) `mod` numFrame
     src = Vec (srcX * getX cellSize) 0
-    dest = toVecInt playerPos
-
-    scene' = scene world
-    player' = player scene'
-    playerPos = pos player'
+    dest = toVecInt $ pos player'
 
