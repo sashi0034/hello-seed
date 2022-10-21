@@ -4,7 +4,9 @@ import Vec (VecF)
 
 data Meteor = Meteor
   { currPos :: VecF
-  , animCount :: Int }
+  , isDead :: Bool
+  , animCount :: Int
+  , velArgument :: Float }
 
 data MeteorManager = MeteorManager
   { meteorList :: [] Meteor

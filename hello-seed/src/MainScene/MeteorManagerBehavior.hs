@@ -6,7 +6,7 @@ import Control.Monad.IO.Class
 import qualified SDL
 import ImageRsc
 import qualified Rendering
-import Vec (toVecInt, Vec (Vec), (~+), getY, getX)
+import Vec (toVecInt, Vec (Vec), (~+), getY, getX, VecF, VecInt)
 import Rendering (SrcRect(SrcRect))
 import Control.Monad
 import System.Random
@@ -22,16 +22,48 @@ updateMeteor scene meteor = meteor
   -- TODO: dead meteorを取り除く
   where
     newAnimCount = 1 + animCount meteor
-    newPos = currPos meteor ~+ Vec 1 0
+    newPos = currPos meteor ~+ Vec velX velY
+    velArg = velArgument meteor
+    velX = cos velArg
+    velY = sin velArg
+
+
+calcRandomStartPos :: Int -> VecInt -> IO VecF
+calcRandomStartPos pattern screenSize'
+  | pattern == 0 = do
+      randVal <- liftIO (randomRIO (0, screenH) :: IO Float)
+      return $ Vec (-margin) randVal
+  | pattern == 1 = do
+      randVal <- liftIO (randomRIO (0, screenH) :: IO Float)
+      return $ Vec (margin + screenW) randVal
+  | pattern == 2 = do
+      randVal <- liftIO (randomRIO (0, screenW) :: IO Float)
+      return $ Vec randVal (-screenH) 
+  | pattern == 3 = do
+      randVal <- liftIO (randomRIO (0, screenW) :: IO Float)
+      return $ Vec randVal (margin + screenH) 
+  | otherwise = undefined
+  where 
+    screenW = fromIntegral $ getX screenSize'
+    screenH = fromIntegral $ getY screenSize'
+    margin = 20
 
 
 checkPopNewMeteor :: MonadIO m => MainScene -> Int -> [] Meteor -> m ([] Meteor)
 checkPopNewMeteor scene frameCount meteors 
 
   | (frameCount `mod` popDuration) == 0 = do
-    y <- liftIO (randomRIO (0, fromIntegral $ getY screenSize') :: IO Float)
+    startPosPattern <- liftIO (randomRIO (0, 3) :: IO Int)
+    startPos <- liftIO $ calcRandomStartPos startPosPattern screenSize'
+
+    randArg <- liftIO (randomRIO (-pi, pi) :: IO Float)
     
-    let newMeteor = Meteor (Vec (-20) y) 0
+    let newMeteor = Meteor { 
+        currPos = startPos
+      , isDead = False
+      , animCount=0
+      , velArgument = randArg
+      }
 
     return $ meteors ++ [newMeteor]
 
