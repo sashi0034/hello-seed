@@ -38,30 +38,47 @@ calcRandomStartPos pattern screenSize'
       return $ Vec (margin + screenW) randVal
   | pattern == 2 = do
       randVal <- liftIO (randomRIO (0, screenW) :: IO Float)
-      return $ Vec randVal (-screenH) 
+      return $ Vec randVal (-screenH)
   | pattern == 3 = do
       randVal <- liftIO (randomRIO (0, screenW) :: IO Float)
-      return $ Vec randVal (margin + screenH) 
+      return $ Vec randVal (margin + screenH)
   | otherwise = undefined
-  where 
+  where
     screenW = fromIntegral $ getX screenSize'
     screenH = fromIntegral $ getY screenSize'
     margin = 20
 
 
+isInScreen ::VecInt ->  Meteor -> Bool
+isInScreen screenSize' meteor =
+  (-margin) < posX && posX < (screenW + margin) &&
+  (-margin) < posY && posY < (screenH + margin)
+  where
+    margin = 40
+    pos = currPos meteor
+    posX = getX pos
+    posY = getY pos
+    screenW = fromIntegral $ getX screenSize'
+    screenH = fromIntegral $ getY screenSize'
+
+
+isOutScreen :: VecInt -> Meteor -> Bool
+isOutScreen screenSize' meteor = not (isInScreen screenSize' meteor)
+
+
 checkPopNewMeteor :: MonadIO m => MainScene -> Int -> [] Meteor -> m ([] Meteor)
-checkPopNewMeteor scene frameCount meteors 
+checkPopNewMeteor scene frameCount meteors
 
   | (frameCount `mod` popDuration) == 0 = do
     startPosPattern <- liftIO (randomRIO (0, 3) :: IO Int)
     startPos <- liftIO $ calcRandomStartPos startPosPattern screenSize'
 
     randArg <- liftIO (randomRIO (-pi, pi) :: IO Float)
-    
-    let newMeteor = Meteor { 
+
+    let newMeteor = Meteor {
         currPos = startPos
       , isDead = False
-      , animCount=0
+      , animCount = 0
       , velArgument = randArg
       }
 
@@ -69,18 +86,19 @@ checkPopNewMeteor scene frameCount meteors
 
   | otherwise = return meteors
 
-  where 
+  where
     popDuration = 30
     screenSize' = screenSize scene
-    
+
 
 
 updateMeteorManager :: MonadIO m => MainScene -> m MeteorManager
 updateMeteorManager scene = do
   greaterMeteorList <- checkPopNewMeteor scene newFrameCount' (meteorList meteorManager')
-  let updatedMeteorList = map (updateMeteor scene) greaterMeteorList
-  
-  return meteorManager' 
+  let updatedMeteorList = filter (isInScreen $ screenSize scene) $ map (updateMeteor scene) greaterMeteorList
+  liftIO $ print $ length updatedMeteorList
+
+  return meteorManager'
     { managerFrameCount = newFrameCount'
     , meteorList = updatedMeteorList }
   where
@@ -104,8 +122,8 @@ renderMeteor r rsc meteor = do
 renderMeteorManager :: MonadIO m => SDL.Renderer -> ImageRsc -> MeteorManager -> m ()
 renderMeteorManager r rsc meteorManager' = do
   forM_ meteors render
-  where 
+  where
     render = renderMeteor r rsc
     meteors = meteorList meteorManager'
-  
+
 
