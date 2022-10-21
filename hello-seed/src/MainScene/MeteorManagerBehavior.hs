@@ -46,7 +46,7 @@ calcRandomStartPos pattern screenSize'
   where
     screenW = fromIntegral $ getX screenSize'
     screenH = fromIntegral $ getY screenSize'
-    margin = 20
+    margin = 40
 
 
 isInScreen ::VecInt ->  Meteor -> Bool
@@ -54,7 +54,7 @@ isInScreen screenSize' meteor =
   (-margin) < posX && posX < (screenW + margin) &&
   (-margin) < posY && posY < (screenH + margin)
   where
-    margin = 40
+    margin = 60
     pos = currPos meteor
     posX = getX pos
     posY = getY pos
@@ -87,7 +87,7 @@ checkPopNewMeteor scene frameCount meteors
   | otherwise = return meteors
 
   where
-    popDuration = 30
+    popDuration = 2
     screenSize' = screenSize scene
 
 
@@ -95,8 +95,10 @@ checkPopNewMeteor scene frameCount meteors
 updateMeteorManager :: MonadIO m => MainScene -> m MeteorManager
 updateMeteorManager scene = do
   greaterMeteorList <- checkPopNewMeteor scene newFrameCount' (meteorList meteorManager')
-  let updatedMeteorList = filter (isInScreen $ screenSize scene) $ map (updateMeteor scene) greaterMeteorList
-  liftIO $ print $ length updatedMeteorList
+  let updatedMeteorList = 
+        filter (isInScreen $ screenSize scene) $ 
+        map (updateMeteor scene) greaterMeteorList
+  --liftIO $ print $ length updatedMeteorList
 
   return meteorManager'
     { managerFrameCount = newFrameCount'
@@ -109,12 +111,12 @@ updateMeteorManager scene = do
 
 renderMeteor :: MonadIO m => SDL.Renderer -> ImageRsc -> Meteor -> m ()
 renderMeteor r rsc meteor = do
-  Rendering.renderPixelartCentral r (solid_rock_bud_16x16 rsc) dest $ SrcRect src cellSize
+  Rendering.renderPixelartCentral r (mail_16x16 rsc) dest $ SrcRect src cellSize
   where
     cellSize = Vec 16 16
     dest = toVecInt $ currPos meteor
-    frameDuration = 15
-    numFrame = 2
+    frameDuration = 10
+    numFrame = 4
     srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (animCount meteor)
     src = Vec srcX 0
 
