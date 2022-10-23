@@ -13,6 +13,10 @@ import Vec
 import MainScene.MainScene
 import MainScene.Background
 import SDL.Video
+import qualified SDL.Font
+import Control.Monad
+import Data.Text
+import FontRsc
 
 
 
@@ -43,6 +47,15 @@ renderBackground r imageRsc world = do
   let src = SDLWrapper.makeRect srcX1 srcY1 srcX2 srcY2
 
   SDL.copy r (blue_bg imageRsc) (Just src) (Just dest)
+
+  let fontRsc' = fontRsc world
+  test <- SDL.Font.solid (mplus64 fontRsc') (SDL.V4 200 200 200 255) (pack "test")
+  testTexture' <- SDL.createTextureFromSurface r test
+
+  SDL.copy r testTexture' Nothing (Just dest)
+
+  SDL.destroyTexture testTexture'
+  SDL.freeSurface test
 
   where
     dest = SDLWrapper.makeRect 0 0 (fromIntegral $ getX size) (fromIntegral $ getY size)

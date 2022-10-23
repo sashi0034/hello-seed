@@ -15,6 +15,7 @@ executable hello-seed
                      , Vec
                      , World
                      , ImageRsc
+                     , FontRsc
                      , Rendering
                      , AnimUtil
                      , MainScene.MainScene
@@ -29,6 +30,7 @@ executable hello-seed
   build-depends:       base
                      , sdl2
                      , sdl2-image
+                     , sdl2-ttf
                      , text
                      , StateVar
                      , linear

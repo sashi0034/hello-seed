@@ -22,7 +22,9 @@ data InputIntent
 
 
 pollIntents :: (MonadIO m) => m [InputIntent]
-pollIntents = eventToIntent `fmap2` SDL.pollEvents
+pollIntents = 
+  SDL.pumpEvents
+  >> eventToIntent `fmap2` SDL.pollEvents
 
   where
     fmap2 = fmap . fmap

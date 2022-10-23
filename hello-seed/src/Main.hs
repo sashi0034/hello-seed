@@ -19,17 +19,20 @@ import qualified MainScene.MainSceneBehavior as MainSceneBehavior
 import Vec (Vec(Vec), getY, getX)
 import Data.Time
 import Control.Concurrent (threadDelay)
+import SDL.Font
+import qualified FontRsc as ImageRsc
 
 
 main :: IO ()
-main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ do
+main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ do
   SDLWrapper.setHintQuality
   let initialWindowSize = Vec 1280 (720 :: Int)
   SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w ->
     SDLWrapper.withRenderer w $ \r -> do
       ImageRsc.loadImageRsc r $ \imageRsc' -> do
-        let world = World.initialWorld r imageRsc' initialWindowSize
-        runApp loopApp world
+        ImageRsc.loadFontRsc $ \fontRsc' -> do
+          let world = World.initialWorld w r imageRsc' fontRsc' initialWindowSize
+          runApp loopApp world
 
 
 runApp :: (Monad m) => (World -> m World) -> World -> m ()

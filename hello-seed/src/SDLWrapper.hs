@@ -2,14 +2,16 @@ module SDLWrapper where
 
 import qualified SDL
 import qualified SDL.Image
+import qualified SDL.Font
 
 import Control.Monad          (void)
-import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Text              (Text)
 
 import SDL (($=))
 import qualified GHC.IO as SDL
-
+import Data.IORef
+import Linear.V2
 
 -- 参考: https://github.com/palf/haskell-sdl2-examples
 
@@ -26,6 +28,13 @@ withSDLImage op = do
   SDL.Image.initialize []
   void op
   SDL.Image.quit
+
+
+withSDLFont :: (MonadIO m) => m a -> m ()
+withSDLFont op = do
+  SDL.Font.initialize
+  void op
+  SDL.Font.quit
 
 
 withWindow :: (MonadIO m) => Text -> (Int, Int) -> (SDL.Window -> m a) -> m ()
@@ -52,6 +61,22 @@ withTexture r filePath op = do
   t <- SDL.Image.loadTexture r filePath
   void $ op t
   SDL.destroyTexture t
+
+
+withFont :: (MonadIO m) => FilePath -> SDL.Font.PointSize -> (SDL.Font.Font -> m a) -> m()
+withFont path size op = do
+  font <- SDL.Font.load path size
+  void $ op font
+  SDL.Font.free font
+
+
+withNewTextureRef ::  (MonadIO m) => SDL.Renderer -> (IORef SDL.Texture -> m a) -> m()
+withNewTextureRef r op = do
+  empty <- SDL.createTexture r SDL.RGBA8888 SDL.TextureAccessTarget (V2 0 0)
+  textureRef <- liftIO $ newIORef empty
+  void $ op textureRef
+  end <- liftIO $ readIORef textureRef
+  SDL.destroyTexture end
 
 
 rendererConfig :: SDL.RendererConfig
