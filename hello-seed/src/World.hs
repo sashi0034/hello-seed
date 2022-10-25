@@ -27,11 +27,11 @@ data World = World
   }
 
 
-initialWorld :: SDL.Window -> SDL.Renderer -> ImageRsc -> FontRsc -> VecInt -> World
-initialWorld window' renderer' imageRsc' fontRsc' windowSize' = World
+initialWorld :: SDL.Window -> SDL.Renderer -> ImageRsc -> FontRsc -> VecInt -> MainScene -> World
+initialWorld window' renderer' imageRsc' fontRsc' windowSize' initialScene = World
   { exiting = False
   , baseFps = 60
-  , scene = initialMainScene windowSize'
+  , scene = initialScene
   , window = window'
   , renderer = renderer'
   , imageRsc = imageRsc'

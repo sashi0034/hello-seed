@@ -9,6 +9,7 @@ import MainScene.MainScene
 import MainScene.PlayerBehavior (renderPlayer, updatePlayer)
 import MainScene.BackgroundBehavior
 import MainScene.MeteorManagerBehavior
+import MainScene.InfoUIBehavior (renderInfoUI)
 
 
 updateMainScene :: (MonadIO  m) =>  World -> InputState -> m MainScene
@@ -31,6 +32,7 @@ renderMainScene world = do
   renderBackground r rsc' world
   renderPlayer r rsc' $ player scene'
   renderMeteorManager r rsc' $ meteorManager scene'
+  renderInfoUI r (fontRsc world) (player scene') (infoUI scene')
 
   where
     r = renderer world

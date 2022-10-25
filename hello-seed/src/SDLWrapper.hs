@@ -16,6 +16,9 @@ import Linear.V2
 -- 参考: https://github.com/palf/haskell-sdl2-examples
 
 
+data SurTex = SurTex (Maybe SDL.Surface) (Maybe SDL.Texture)
+
+
 withSDL :: (MonadIO m) => m a -> m ()
 withSDL op = do
   SDL.initialize []
@@ -70,13 +73,18 @@ withFont path size op = do
   SDL.Font.free font
 
 
-withNewTextureRef ::  (MonadIO m) => SDL.Renderer -> (IORef SDL.Texture -> m a) -> m()
-withNewTextureRef r op = do
-  empty <- SDL.createTexture r SDL.RGBA8888 SDL.TextureAccessTarget (V2 0 0)
-  textureRef <- liftIO $ newIORef empty
-  void $ op textureRef
-  end <- liftIO $ readIORef textureRef
-  SDL.destroyTexture end
+withNewSurTexRef ::  (MonadIO m) => (IORef SurTex -> m a) -> m()
+withNewSurTexRef op = do
+  surTexRef <- liftIO $ newIORef $ SurTex Nothing Nothing
+  void $ op surTexRef
+  endRef <- liftIO $ readIORef surTexRef
+  freeSurTex endRef
+
+
+freeSurTex :: (MonadIO m) => SurTex -> m()
+freeSurTex (SurTex sur tex) = do
+  mapM_ SDL.freeSurface sur
+  mapM_ SDL.destroyTexture tex
 
 
 rendererConfig :: SDL.RendererConfig

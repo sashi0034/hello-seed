@@ -14,7 +14,6 @@ import MainScene.MainScene
 import MainScene.Background
 import SDL.Video
 import qualified SDL.Font
-import Control.Monad
 import Data.Text
 import FontRsc
 
@@ -48,21 +47,12 @@ renderBackground r imageRsc world = do
 
   SDL.copy r (blue_bg imageRsc) (Just src) (Just dest)
 
-  let fontRsc' = fontRsc world
-  test <- SDL.Font.solid (mplus64 fontRsc') (SDL.V4 200 200 200 255) (pack "test")
-  testTexture' <- SDL.createTextureFromSurface r test
-
-  SDL.copy r testTexture' Nothing (Just dest)
-
-  SDL.destroyTexture testTexture'
-  SDL.freeSurface test
-
   where
     dest = SDLWrapper.makeRect 0 0 (fromIntegral $ getX size) (fromIntegral $ getY size)
     size = World.windowSize world
 
     currPhase = (fromIntegral (animCount $ background $ scene world) / 180) * pi :: Float
-    maxAmp = 120 :: Float
+    maxAmp = 200 :: Float
     currAmp = maxAmp * sin currPhase
 
 

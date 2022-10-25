@@ -3,7 +3,12 @@ module Rendering where
 import qualified SDL
 import Vec
 import qualified SDLWrapper
-import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Class (MonadIO (liftIO))
+import Data.IORef (IORef, readIORef, writeIORef)
+import SDL.Font
+import Data.Text
+import Control.Monad
+import Data.Maybe (fromMaybe)
 
 
 pixelartScale :: Int
@@ -13,8 +18,8 @@ pixelartScale = 3
 data SrcRect = SrcRect VecInt VecInt
 
 
-renderPixelart :: (MonadIO m) => SDL.Renderer -> SDL.Texture -> VecInt -> SrcRect -> m()
-renderPixelart renderer texture startDest (SrcRect startSrc size) =
+renderTexture :: (MonadIO m) => Int -> SDL.Renderer -> SDL.Texture -> VecInt -> SrcRect -> m()
+renderTexture dotScale renderer texture startDest (SrcRect startSrc size) =
   SDL.copy renderer texture (Just clipping) (Just dest)
 
   where
@@ -27,8 +32,20 @@ renderPixelart renderer texture startDest (SrcRect startSrc size) =
     dest = fromIntegral <$> SDLWrapper.makeRect
       (getX startDest)
       (getY startDest)
-      (pixelartScale * srcW)
-      (pixelartScale * srcH)
+      (dotScale * srcW)
+      (dotScale * srcH)
+
+
+getTextureSize :: (MonadIO m) => SDL.Texture -> m VecInt
+getTextureSize tex = do
+  info <- SDL.queryTexture tex
+  let w = SDL.textureWidth info
+  let h = SDL.textureHeight info
+  return $ Vec (fromIntegral w) (fromIntegral h)
+
+
+renderPixelart :: (MonadIO m) => SDL.Renderer -> SDL.Texture -> VecInt -> SrcRect -> m()
+renderPixelart = renderTexture pixelartScale
 
 
 renderPixelartCentral :: (MonadIO m) => SDL.Renderer -> SDL.Texture -> VecInt -> SrcRect -> m()
@@ -39,5 +56,36 @@ renderPixelartCentral renderer texture startDest (SrcRect startSrc size) =
     startDest' = startDest ~- (halfSize ~* pixelartScale)
 
 
+type RenderedText = SDLWrapper.SurTex
+
+
+updateTextSolid :: (MonadIO m) => SDL.Renderer -> Font -> Color -> Text -> IORef RenderedText -> m()
+updateTextSolid renderer font color text renderedRef = do
+  renderedText <- liftIO $ readIORef renderedRef
+  SDLWrapper.freeSurTex renderedText
+
+  newSurface <- SDL.Font.solid font color text
+  newTexture <- SDL.createTextureFromSurface renderer newSurface
+
+  liftIO $ writeIORef renderedRef $ SDLWrapper.SurTex (Just newSurface) (Just newTexture)
+
+
+getTexFromRenderedTextRef :: (MonadIO m) => IORef RenderedText -> m (Maybe SDL.Texture)
+getTexFromRenderedTextRef renderedRef = do
+  renderedText <- liftIO $ readIORef renderedRef
+  return $ popTexture renderedText
+  where
+    popTexture (SDLWrapper.SurTex _ t) = t
+
+
+renderPreRenderedText :: (MonadIO m) => SDL.Renderer -> IORef RenderedText -> VecInt -> m()
+renderPreRenderedText r textRef pos = do
+  (SDLWrapper.SurTex _ tex) <- liftIO $ readIORef textRef
+  texSize <- mapM getTextureSize tex
+  let texSize' = fromMaybe vecZero texSize
+
+  let render t = renderTexture 1 r t pos (SrcRect vecZero texSize')
+
+  mapM_ render tex
 
 

@@ -14,13 +14,15 @@ import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.StateVar
 import ImageRsc
-import InputState (InputState (intents, InputState), readInput)
+import InputState ( readInput, InputState(intents) )
 import qualified MainScene.MainSceneBehavior as MainSceneBehavior
 import Vec (Vec(Vec), getY, getX)
 import Data.Time
 import Control.Concurrent (threadDelay)
-import SDL.Font
+import SDL.Font ()
 import qualified FontRsc as ImageRsc
+import qualified MainScene.MainScene as MainScene
+
 
 
 main :: IO ()
@@ -31,8 +33,10 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ d
     SDLWrapper.withRenderer w $ \r -> do
       ImageRsc.loadImageRsc r $ \imageRsc' -> do
         ImageRsc.loadFontRsc $ \fontRsc' -> do
-          let world = World.initialWorld w r imageRsc' fontRsc' initialWindowSize
-          runApp loopApp world
+          MainScene.withMainScene initialWindowSize $ \scene' -> do
+
+            let world = World.initialWorld w r imageRsc' fontRsc' initialWindowSize scene'
+            runApp loopApp world
 
 
 runApp :: (Monad m) => (World -> m World) -> World -> m ()

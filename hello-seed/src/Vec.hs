@@ -47,3 +47,8 @@ normalize :: VecF -> VecF
 normalize (Vec x y) = Vec (x / size) (y / size)
   where
     size = sqrt $ sqrMagnitude $ Vec x y
+
+
+vecZero :: (Num a) => Vec a
+vecZero = Vec 0 0
+
