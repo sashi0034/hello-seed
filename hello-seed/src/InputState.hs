@@ -3,6 +3,7 @@ module InputState
   ( InputState(..)
   , readInput
   , MouseState(..)
+  , noInput
   ) where 
 
 import qualified SDL.Input
@@ -21,6 +22,13 @@ data InputState = InputState
 
 data MouseState = MouseState
   { mousePos :: VecInt
+  }
+
+
+noInput :: InputState
+noInput = InputState 
+  { intents = [] 
+  , mouse = MouseState{ mousePos=vecZero }
   }
 
 

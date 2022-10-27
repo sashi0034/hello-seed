@@ -13,6 +13,7 @@ import ImageRsc (ImageRsc)
 import qualified SDL
 import Vec (VecInt)
 import FontRsc (FontRsc)
+import InputState (InputState, noInput)
 
 
 data World = World
@@ -24,6 +25,7 @@ data World = World
   , imageRsc :: ImageRsc
   , fontRsc :: FontRsc
   , windowSize :: VecInt
+  , input :: InputState
   }
 
 
@@ -37,4 +39,5 @@ initialWorld window' renderer' imageRsc' fontRsc' windowSize' initialScene = Wor
   , imageRsc = imageRsc'
   , fontRsc = fontRsc'
   , windowSize = windowSize'
+  , input = noInput
   }

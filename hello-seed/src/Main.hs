@@ -51,8 +51,8 @@ repeatUntil f p = go
 loopApp :: (MonadIO m) => World -> m World
 loopApp world = do
   controlFpsInApp world $ do
-    input <- InputState.readInput
-    world' <- updateApp world input
+    input' <- InputState.readInput
+    world' <- updateApp world {input = input'}
     renderApp world'
     return world'
 
@@ -79,10 +79,10 @@ controlFpsInApp world process = do
 
 
 
-updateApp ::(MonadIO  m) =>  World -> InputState -> m World
-updateApp world input = do
-  world' <- applyIntents world $ intents input
-  scene' <- MainSceneBehavior.updateMainScene world' input
+updateApp ::(MonadIO  m) =>  World -> m World
+updateApp world = do
+  world' <- applyIntents world $ intents (input world)
+  scene' <- MainSceneBehavior.updateMainScene world'
   return world' {scene=scene'}
 
 

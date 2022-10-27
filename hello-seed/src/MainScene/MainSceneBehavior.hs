@@ -12,12 +12,12 @@ import MainScene.MeteorManagerBehavior
 import MainScene.InfoUIBehavior (renderInfoUI)
 
 
-updateMainScene :: (MonadIO  m) =>  World -> InputState -> m MainScene
-updateMainScene world input = do
+updateMainScene :: (MonadIO  m) =>  World -> m MainScene
+updateMainScene world = do
   let scene' = scene world
   
   background' <- updateBackground scene'
-  player' <- updatePlayer world input
+  player' <- updatePlayer world (input world)
   meteorManager' <- updateMeteorManager scene'
 
   return scene' 
