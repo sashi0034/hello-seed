@@ -52,15 +52,13 @@ loopApp :: (MonadIO m) => World -> m World
 loopApp world = do
   controlFpsInApp world $ do
     input' <- InputState.readInput
-    world' <- updateApp world {input = input'}
-    renderApp world'
-    return world'
+    refreshApp world {input = input'}
 
 
 controlFpsInApp :: MonadIO m => World -> (m World) -> m World
 controlFpsInApp world process = do
   loopStartTime <- liftIO getCurrentTime
-  
+
   world' <- process
 
   loopEndTime <- liftIO getCurrentTime
@@ -68,7 +66,7 @@ controlFpsInApp world process = do
   let deltaTime = diffUTCTime loopEndTime loopStartTime
   let realDuration = 1000 * 1000 * (fromRational $ toRational deltaTime)
   let sleepDuration = idealDuration - realDuration
-  
+
   liftIO $ threadDelay $ floor sleepDuration
 
   return world'
@@ -76,15 +74,6 @@ controlFpsInApp world process = do
   where
     idealFps = fromIntegral $ baseFps world
     idealDuration = 1000 * 1000 * ((1 :: Float) / idealFps)
-
-
-
-updateApp ::(MonadIO  m) =>  World -> m World
-updateApp world = do
-  world' <- applyIntents world $ intents (input world)
-  scene' <- MainSceneBehavior.updateMainScene world'
-  return world' {scene=scene'}
-
 
 
 applyIntents :: (MonadIO  m) => World -> [InputIntent] -> m World
@@ -99,14 +88,19 @@ applyIntent world InputIntent.Quit = world { exiting = True }
 applyIntent world _ = world
 
 
-renderApp :: (MonadIO m) => World -> m ()
-renderApp world = do
+refreshApp :: (MonadIO m) => World -> m World
+refreshApp world = do
   let renderColor = SDL.rendererDrawColor r
   renderColor $= SDL.V4 100 100 100 255
 
   SDL.clear r
-  MainSceneBehavior.renderMainScene world
+
+  world' <- applyIntents world $ intents (input world)
+  scene' <- MainSceneBehavior.refreshMainScene world'
+
   SDL.present r
+
+  return world'{scene=scene'}
 
   where
     r = renderer world

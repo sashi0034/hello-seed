@@ -7,14 +7,23 @@ import Vec
 import Data.Text
 import MainScene.Player (Player (pos))
 import FontRsc
+import World
+import MainScene.MainScene
 
 
-renderInfoUI :: (MonadIO m) => SDL.Renderer -> FontRsc -> Player -> InfoUI -> m ()
-renderInfoUI r rsc player ui = do
-  updateTextSolid r (mplus64 rsc) (SDL.V4 255 200 255 255) (pack pos'') (scoreText ui)
-  renderPreRenderedText r (scoreText ui) (Vec 10 10)
+refreshInfoUI :: (MonadIO m) => World -> m InfoUI
+refreshInfoUI w = do
+  renderInfoUI w $ infoUI $ scene w
+  return $ infoUI $ scene w
+
+
+renderInfoUI :: (MonadIO m) => World -> InfoUI -> m ()
+renderInfoUI w ui = do
+  updateTextSolid (renderer w) (mplus64 (fontRsc w)) (SDL.V4 255 200 255 255) (pack pos'') (scoreText ui)
+  renderPreRenderedText (renderer w) (scoreText ui) (Vec 10 10)
 
   where 
-    pos' = pos player
+    scene' = scene w
+    pos' = pos $ player scene'
     pos'' = show pos'
 

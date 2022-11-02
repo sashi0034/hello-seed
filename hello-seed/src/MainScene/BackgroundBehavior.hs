@@ -1,7 +1,6 @@
 
 module MainScene.BackgroundBehavior
-( updateBackground
-, renderBackground
+( refreshBackground
 ) where
 
 import Control.Monad.IO.Class
@@ -17,6 +16,12 @@ import qualified SDL.Font
 import Data.Text
 import FontRsc
 
+
+
+refreshBackground :: MonadIO m => World -> m Background
+refreshBackground world = do
+  renderBackground (renderer world) (imageRsc world) world
+  updateBackground (scene world)
 
 
 updateBackground :: MonadIO m => MainScene -> m Background

@@ -11,6 +11,7 @@ import Rendering (SrcRect(SrcRect))
 import Control.Monad
 import System.Random
 import AnimUtil (calcAnimFrameIndex)
+import World (World(scene, imageRsc, renderer))
 
 
 
@@ -19,7 +20,7 @@ updateMeteor scene meteor = meteor
   { currPos = newPos
   , animCount = newAnimCount
   }
-  -- TODO: dead meteorを取り除く
+
   where
     newAnimCount = 1 + animCount meteor
     newPos = currPos meteor ~+ Vec velX velY
@@ -90,6 +91,12 @@ checkPopNewMeteor scene frameCount meteors
     popDuration = 2
     screenSize' = screenSize scene
 
+
+
+refreshMeteorManager :: MonadIO m => World -> m MeteorManager
+refreshMeteorManager w = do
+  renderMeteorManager (renderer w) (imageRsc w) (meteorManager $ scene w)
+  updateMeteorManager (scene w)
 
 
 updateMeteorManager :: MonadIO m => MainScene -> m MeteorManager

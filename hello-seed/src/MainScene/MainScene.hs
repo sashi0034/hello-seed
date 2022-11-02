@@ -34,5 +34,4 @@ withMainScene screenSize' op =  (`runContT` return) $ do
 
   op scene
 
-  liftIO $ print ""
 

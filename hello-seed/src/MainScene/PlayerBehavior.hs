@@ -1,7 +1,6 @@
 
 module MainScene.PlayerBehavior
-( updatePlayer
-, renderPlayer
+( refreshPlayer
 ) where
 
 
@@ -19,6 +18,13 @@ import Rendering (SrcRect(SrcRect))
 import AnimUtil (calcAnimFrameIndex)
 
 
+refreshPlayer :: (MonadIO m) => World -> m Player
+refreshPlayer w = do
+  result <- updatePlayer w
+  renderPlayer (renderer w) (imageRsc w) result
+  return result
+
+
 movePlayer :: World -> VecF -> Player
 movePlayer world deltaPos = player'{pos = deltaPos ~+ currPos}
   where
@@ -27,8 +33,8 @@ movePlayer world deltaPos = player'{pos = deltaPos ~+ currPos}
     currPos = pos player'
 
 
-updatePlayer :: (MonadIO m) => World -> InputState -> m Player
-updatePlayer world input = do
+updatePlayer :: (MonadIO m) => World -> m Player
+updatePlayer world = do
   return  player'
     { pos = calcNewPos currPos mousePos'
     , animCount = 1 + animCount player'
@@ -38,7 +44,7 @@ updatePlayer world input = do
     player' = player scene'
 
     currPos = pos player'
-    mousePos' =  toVecF $ mousePos $ mouse input
+    mousePos' =  toVecF $ mousePos $ mouse $ input world
 
 
 calcNewPos :: Vec Float -> Vec Float -> Vec Float
@@ -53,7 +59,6 @@ calcNewPos currPos inputPos
 
 renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> Player -> m ()
 renderPlayer r rsc player' = do
-  --liftIO $ print $ animCount'
   Rendering.renderPixelartCentral r (blobwob_24x24 rsc) dest $ SrcRect src cellSize
 
   where

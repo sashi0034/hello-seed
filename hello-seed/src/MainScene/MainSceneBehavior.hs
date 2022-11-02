@@ -4,40 +4,28 @@ module MainScene.MainSceneBehavior where
 
 import Control.Monad.IO.Class
 import World
-import InputState
 import MainScene.MainScene
-import MainScene.PlayerBehavior (renderPlayer, updatePlayer)
+import MainScene.PlayerBehavior
 import MainScene.BackgroundBehavior
 import MainScene.MeteorManagerBehavior
-import MainScene.InfoUIBehavior (renderInfoUI)
+import MainScene.InfoUIBehavior (renderInfoUI, refreshInfoUI)
 
 
-updateMainScene :: (MonadIO  m) =>  World -> m MainScene
-updateMainScene world = do
-  let scene' = scene world
+refreshMainScene :: (MonadIO m) => World -> m MainScene
+refreshMainScene world = do
   
-  background' <- updateBackground scene'
-  player' <- updatePlayer world (input world)
-  meteorManager' <- updateMeteorManager scene'
+  background' <- refreshBackground world
+  player' <- refreshPlayer world
+  meteorManager' <- refreshMeteorManager world
+  infoUI' <- refreshInfoUI world
 
-  return scene' 
+  return (scene world)
     { player = player'
     , background = background'
     , meteorManager = meteorManager'
+    , infoUI = infoUI'
     }
 
-
-renderMainScene  :: (MonadIO m) => World -> m ()
-renderMainScene world = do
-  renderBackground r rsc' world
-  renderPlayer r rsc' $ player scene'
-  renderMeteorManager r rsc' $ meteorManager scene'
-  renderInfoUI r (fontRsc world) (player scene') (infoUI scene')
-
-  where
-    r = renderer world
-    rsc' = imageRsc world
-    scene' = scene world
 
 
 
