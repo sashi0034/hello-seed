@@ -9,6 +9,7 @@ import MainScene.InfoUI
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad
 import Control.Monad.Cont
+import MainScene.HarvestManager (HarvestManager, initialHarvestManager)
 
 
 data MainScene = MainScene
@@ -17,6 +18,7 @@ data MainScene = MainScene
   , meteorManager :: MeteorManager
   , infoUI :: InfoUI
   , screenSize :: VecInt
+  , harvestManager :: HarvestManager
   }
 
 
@@ -28,6 +30,7 @@ withMainScene screenSize' op =  (`runContT` return) $ do
         { player = initialPlayer
         , background = initialBackground
         , meteorManager = initialMeteorManager
+        , harvestManager = initialHarvestManager
         , infoUI = infoUI'
         , screenSize = screenSize'
         }

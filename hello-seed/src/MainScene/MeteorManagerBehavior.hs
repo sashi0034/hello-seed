@@ -118,12 +118,12 @@ updateMeteorManager scene = do
 
 renderMeteor :: MonadIO m => SDL.Renderer -> ImageRsc -> Meteor -> m ()
 renderMeteor r rsc meteor = do
-  Rendering.renderPixelartCentral r (mail_16x16 rsc) dest $ SrcRect src cellSize
+  Rendering.renderPixelartCentral r (octocat_16x16 rsc) dest $ SrcRect src cellSize
   where
     cellSize = Vec 16 16
     dest = toVecInt $ currPos meteor
     frameDuration = 10
-    numFrame = 4
+    numFrame = 6
     srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (animCount meteor)
     src = Vec srcX 0
 

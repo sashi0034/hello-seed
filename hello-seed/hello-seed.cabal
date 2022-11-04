@@ -28,6 +28,8 @@ executable hello-seed
                      , MainScene.MeteorManagerBehavior
                      , MainScene.InfoUI
                      , MainScene.InfoUIBehavior
+                     , MainScene.HarvestManager
+                     , MainScene.HarvestManagerBehavior
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:       base
                      , sdl2

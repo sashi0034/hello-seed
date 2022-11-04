@@ -17,6 +17,8 @@ data ImageRsc = ImageRsc
   , blue_bg :: SDL.Texture
   , solid_rock_bud_16x16 :: SDL.Texture
   , mail_16x16 :: SDL.Texture
+  , octocat_16x16 :: SDL.Texture
+  , corn_24x24 :: SDL.Texture
   }
 
 loadImageRsc :: (MonadIO m) => SDL.Renderer -> (ImageRsc -> m a) -> m ()
@@ -25,6 +27,8 @@ loadImageRsc r op =
   SDLWrapper.withTexture r "./assets/tree_16x16.png" $ \tree_16x16' -> 
   SDLWrapper.withTexture r "./assets/solid_rock_bud_16x16.png" $ \solid_rock_bud_16x16' ->   
   SDLWrapper.withTexture r "./assets/mail_16x16.png" $ \mail_16x16' ->   
+  SDLWrapper.withTexture r "./assets/octocat_16x16.png" $ \octocat_16x16' ->  
+  SDLWrapper.withTexture r "./assets/corn_24x24.png" $ \corn_24x24' -> 
 
   -- <a href="https://www.freepik.com/free-vector/blue-curve-background_16282276.htm#query=simple%20background&position=7&from_view=keyword">Image by rawpixel.com</a> on Freepik
   --SDLWrapper.withTexture r "./assets/blue_bg.jpg" $ \blue_bg' -> 
@@ -38,6 +42,8 @@ loadImageRsc r op =
       , blue_bg = blue_bg'
       , solid_rock_bud_16x16 = solid_rock_bud_16x16'
       , mail_16x16 = mail_16x16'
+      , octocat_16x16 = octocat_16x16'
+      , corn_24x24 = corn_24x24'
       })
 
 
