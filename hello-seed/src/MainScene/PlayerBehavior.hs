@@ -8,7 +8,6 @@ import World
 import MainScene.MainScene
 import Vec
 import qualified SDL
-import qualified SDLWrapper
 import Control.Monad.IO.Class
 import ImageRsc
 import InputState

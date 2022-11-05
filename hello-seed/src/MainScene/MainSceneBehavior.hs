@@ -16,8 +16,8 @@ refreshMainScene :: (MonadIO m) => World -> m MainScene
 refreshMainScene world = do
   
   background' <- refreshBackground world
-  player' <- refreshPlayer world
   harvestManager' <- refreshHarvestManager world
+  player' <- refreshPlayer world
   meteorManager' <- refreshMeteorManager world
   infoUI' <- refreshInfoUI world
 

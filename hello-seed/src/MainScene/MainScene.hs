@@ -30,7 +30,7 @@ withMainScene screenSize' op =  (`runContT` return) $ do
         { player = initialPlayer
         , background = initialBackground
         , meteorManager = initialMeteorManager
-        , harvestManager = initialHarvestManager
+        , harvestManager = initialHarvestManager screenSize'
         , infoUI = infoUI'
         , screenSize = screenSize'
         }
