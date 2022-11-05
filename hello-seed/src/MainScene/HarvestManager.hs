@@ -3,10 +3,19 @@ import Vec
 import Rendering
 
 
+type ChargingCount = Int
+data HarvestState = Charging ChargingCount | Ripened
+
+
 data Harvest = Harvest
   { animCount :: Int
   , installedPos :: VecInt
+  , currState :: HarvestState
   }
+
+
+maxChargingCount :: Int
+maxChargingCount = 300
 
 
 data HarvestManager = HarvestManager
@@ -19,7 +28,11 @@ initialHarvestManager screenSize = HarvestManager
   where
     baseX = getX screenSize `div` 2
     baseY = getY screenSize `div` 2
-    harvList = map (\pos -> Harvest{animCount=0, installedPos=pos}) posList
+    harvList = map (\pos -> Harvest
+      { animCount=0
+      , installedPos=pos
+      , currState = Charging 0
+      }) posList
     spaceX = 24 * pixelartScale
     spaceY = 32 * pixelartScale
     numHarvX = 6
