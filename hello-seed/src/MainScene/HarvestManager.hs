@@ -59,3 +59,10 @@ makePosRow baseX y xIndexes space = map (`Vec` y) xList
   where
     xList = map (+ baseX) offset
     offset = map (* space) xIndexes
+
+
+harvestSideLength :: Int
+harvestSideLength = 24
+
+harvestCellSize :: Vec Int
+harvestCellSize = Vec harvestSideLength harvestSideLength

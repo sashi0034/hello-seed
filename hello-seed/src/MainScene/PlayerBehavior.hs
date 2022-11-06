@@ -63,7 +63,7 @@ renderPlayer r rsc player' = do
   where
     frameDuration = 10
     numFrame = 10
-    cellSize = Vec 24 (24 :: Int)
+    cellSize = playerSize
 
     srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (animCount player')
     src = Vec srcX 0

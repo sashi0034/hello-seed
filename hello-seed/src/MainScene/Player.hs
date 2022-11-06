@@ -13,3 +13,6 @@ initialPlayer = Player
   , animCount = 0
   }
 
+
+playerSize :: Vec Int
+playerSize = Vec 24 24

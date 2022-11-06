@@ -18,6 +18,7 @@ executable hello-seed
                      , FontRsc
                      , Rendering
                      , AnimUtil
+                     , CollisionUtil
                      , MainScene.MainScene
                      , MainScene.MainSceneBehavior
                      , MainScene.Player

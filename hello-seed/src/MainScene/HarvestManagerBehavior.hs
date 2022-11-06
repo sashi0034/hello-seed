@@ -2,11 +2,13 @@ module MainScene.HarvestManagerBehavior where
 import MainScene.HarvestManager
 import Control.Monad.Cont
 import World
-import MainScene.MainScene (MainScene(harvestManager, screenSize))
+import MainScene.MainScene (MainScene(harvestManager, screenSize, player))
 import Vec
 import Rendering
 import ImageRsc (ImageRsc(corn_24x24))
 import AnimUtil
+import CollisionUtil (hitRectRect, ColRect (ColRect))
+import qualified MainScene.Player as Player
 
 
 refreshHarvestManager :: (MonadIO m) => World -> m HarvestManager
@@ -14,27 +16,37 @@ refreshHarvestManager w = do
   forM_ (harvestList this) (renderHarvest w)
 
   return $ this{
-    harvestList= map updateHarvest (harvestList this)
+    harvestList= map (updateHarvest w) (harvestList this)
     }
 
   where
     this = harvestManager $ scene w
 
 
-updateHarvest :: Harvest -> Harvest
-updateHarvest h =
+updateHarvest :: World -> Harvest -> Harvest
+updateHarvest w h =
   let h' = h{ animCount= 1 + animCount h }
-  in updateHarvestByState h' $ currState h'
+  in updateHarvestByState w h' $ currState h'
 
 
-updateHarvestByState :: Harvest -> HarvestState -> Harvest
-updateHarvestByState h (Charging count) =
+updateHarvestByState :: World -> Harvest -> HarvestState -> Harvest
+
+updateHarvestByState _ h (Charging count) =
   let nextState = if count < maxChargingCount
         then Charging $ count + 1
         --else Charging 0
         else Ripened
   in h{ currState=nextState }
-updateHarvestByState h _ = h
+
+updateHarvestByState w h Ripened = 
+  let p = player $ scene w
+      playerSize = toVecF Player.playerSize
+      thisSize = toVecF harvestCellSize
+      isReaped = hitRectRect 
+        (ColRect (Player.pos p ~- playerSize ~* 0.5) playerSize)
+        (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
+      nextState = if isReaped then Charging 0 else Ripened
+  in h{ currState=nextState }
 
 
 renderHarvest :: (MonadIO m) => World -> Harvest -> m()
@@ -48,24 +60,24 @@ renderHarvest w h =
 
     Charging count -> do
       -- チャージ背景
-      r pos $ SrcRect (Vec 0 cellSize) (Vec cellSize cellSize)
+      r pos $ SrcRect (Vec 0 cellLen) (Vec cellLen cellLen)
       -- チャージした分だけ描画
       r' (pos ~+ posOffset) $
-        SrcRect (Vec cellSize (cellSize + visibleOffsetY)) (Vec cellSize visibleH)
+        SrcRect (Vec cellLen (cellLen + visibleOffsetY)) (Vec cellLen visibleH)
       where        
         rate = fromIntegral count / (fromIntegral maxChargingCount :: Float)
-        visibleH = floor $ fromIntegral cellSize * rate
-        visibleOffsetY = cellSize - visibleH
-        halfCell = Vec (cellSize `div` 2) (cellSize `div` 2)
+        visibleH = floor $ fromIntegral cellLen * rate
+        visibleOffsetY = cellLen - visibleH
+        halfCell = Vec (cellLen `div` 2) (cellLen `div` 2)
         posOffset = (Vec 0 visibleOffsetY ~- halfCell) ~* pixelartScale
 
-    Ripened -> r pos $ SrcRect (Vec srcX 0) (Vec cellSize cellSize)
+    Ripened -> r pos $ SrcRect (Vec srcX 0) (Vec cellLen cellLen)
       where
         numFrame = 4
         frameDuration = 15
-        srcX = cellSize * calcAnimFrameIndex numFrame frameDuration (animCount h)
+        srcX = cellLen * calcAnimFrameIndex numFrame frameDuration (animCount h)
 
   where
-    cellSize = 24 :: Int
+    cellLen = harvestSideLength
 
 
