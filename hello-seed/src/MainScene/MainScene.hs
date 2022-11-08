@@ -12,8 +12,11 @@ import Control.Monad.Cont
 import MainScene.HarvestManager (HarvestManager, initialHarvestManager)
 
 
+data SceneState = Title | Playing
+
 data MainScene = MainScene
-  { player :: Player
+  { sceneState :: SceneState
+  , player :: Player
   , background :: Background
   , meteorManager :: MeteorManager
   , infoUI :: InfoUI
@@ -27,7 +30,8 @@ withMainScene screenSize' op =  (`runContT` return) $ do
   infoUI' <- ContT initialInfoUI
 
   let scene = MainScene
-        { player = initialPlayer
+        { sceneState = Title
+        , player = initialPlayer
         , background = initialBackground
         , meteorManager = initialMeteorManager
         , harvestManager = initialHarvestManager screenSize'

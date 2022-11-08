@@ -4,7 +4,7 @@ module InputState
   , readInput
   , MouseState(..)
   , noInput
-  ) where 
+  ) where
 
 import qualified SDL.Input
 import InputIntent
@@ -22,27 +22,33 @@ data InputState = InputState
 
 data MouseState = MouseState
   { mousePos :: VecInt
+  , mouseButton :: SDL.MouseButton -> Bool
   }
 
 
 noInput :: InputState
-noInput = InputState 
-  { intents = [] 
-  , mouse = MouseState{ mousePos=vecZero }
+noInput = InputState
+  { intents = []
+  , mouse = MouseState
+      { mousePos=vecZero
+      , mouseButton= const False }
   }
 
 
 readInput :: (MonadIO m) => m InputState
 readInput = do
-  mousePos <- SDL.Input.getAbsoluteMouseLocation
-  let mousePos' = convertP mousePos
-  let mousePos'' = convertV2 mousePos'
+  pos <- SDL.Input.getAbsoluteMouseLocation
+  let pos' = convertP pos
+  let pos'' = convertV2 pos'
+  
+  button <- SDL.Input.getMouseButtons
 
   intents' <- InputIntent.pollIntents
 
-  return InputState 
+  return InputState
     { mouse = MouseState
-        { mousePos = mousePos'' 
+        { mousePos = pos''
+        , mouseButton = button
         }
     , intents = intents'
     }
