@@ -120,7 +120,7 @@ renderMeteor :: MonadIO m => SDL.Renderer -> ImageRsc -> Meteor -> m ()
 renderMeteor r rsc meteor = do
   Rendering.renderPixelartCentral r (octocat_16x16 rsc) dest $ SrcRect src cellSize
   where
-    cellSize = Vec 16 16
+    cellSize = meteorCellSize
     dest = toVecInt $ currPos meteor
     frameDuration = 10
     numFrame = 6

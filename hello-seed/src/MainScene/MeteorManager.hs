@@ -1,6 +1,6 @@
 
 module MainScene.MeteorManager where
-import Vec (VecF)
+import Vec (VecF, Vec (Vec))
 
 data Meteor = Meteor
   { currPos :: VecF
@@ -18,3 +18,6 @@ initialMeteorManager = MeteorManager
   { meteorList = []
   , managerFrameCount = 0 }
 
+
+meteorCellSize :: Vec Int
+meteorCellSize = Vec 16 16

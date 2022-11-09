@@ -13,7 +13,8 @@ import MainScene.MeteorManagerBehavior
 import MainScene.InfoUIBehavior (refreshInfoUI)
 import MainScene.HarvestManagerBehavior
 import InputState
-import qualified SDL as SDL.Input.Mouse
+import qualified MainScene.Player as Player
+import qualified SDL
 
 
 refreshMainScene :: (MonadIO m) => World -> m MainScene
@@ -28,16 +29,18 @@ checkShiftScene :: World -> SceneState -> MainScene
 checkShiftScene w Title = 
   let s = scene w
       butt = mouseButton $ mouse $ input w
-      isClicked = butt SDL.Input.Mouse.ButtonLeft
+      isClicked = butt SDL.ButtonLeft
   in if isClicked 
-    then s {sceneState = Playing}
+    then initPlaying $ s {sceneState = Playing}
     else s
 
 
-checkShiftScene w Playing =
-  scene w
-
-
+checkShiftScene w Playing = 
+  let s = scene w
+      isPlayerAlive = Player.isAlive $ player s
+  in if isPlayerAlive
+    then s 
+    else s {sceneState = Title}
 
 
 refreshByState :: (MonadIO m) => World -> SceneState -> m MainScene

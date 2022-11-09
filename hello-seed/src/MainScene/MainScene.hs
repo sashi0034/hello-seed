@@ -42,3 +42,11 @@ withMainScene screenSize' op =  (`runContT` return) $ do
   op scene
 
 
+initPlaying :: MainScene -> MainScene 
+initPlaying s = s
+  { player = initialPlayer
+  , background = initialBackground
+  , meteorManager = initialMeteorManager
+  , harvestManager = initialHarvestManager $ screenSize s
+  }
+  
