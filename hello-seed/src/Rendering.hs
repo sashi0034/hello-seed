@@ -9,6 +9,9 @@ import SDL.Font
 import Data.Text
 import Control.Monad
 import Data.Maybe (fromMaybe)
+import FontOutlined (FontOutlined (FontOutlined))
+import Linear
+import Linear.Affine (Point(P))
 
 
 pixelartScale :: Int
@@ -65,6 +68,26 @@ updateTextSolid renderer font color text renderedRef = do
   SDLWrapper.freeSurTex renderedText
 
   newSurface <- SDL.Font.solid font color text
+  newTexture <- SDL.createTextureFromSurface renderer newSurface
+
+  liftIO $ writeIORef renderedRef $ SDLWrapper.SurTex (Just newSurface) (Just newTexture)
+
+
+updateTextBlendedOutlined :: (MonadIO m) => SDL.Renderer -> FontOutlined -> Color -> Color -> Text -> IORef RenderedText -> m()
+updateTextBlendedOutlined renderer (FontOutlined fore edge outlineW) fg bg text renderedRef = do
+  renderedText <- liftIO $ readIORef renderedRef
+  SDLWrapper.freeSurTex renderedText
+
+  -- フチの中身
+  tempSurface <- SDL.Font.blended fore fg text
+
+  -- フォントのフチに中身を乗せる
+  newSurface <- SDL.Font.blended edge bg text
+  let lineW = fromIntegral outlineW
+  void $ SDL.surfaceBlit tempSurface Nothing newSurface (Just $ P $ V2 lineW lineW)
+
+  SDL.freeSurface tempSurface
+  
   newTexture <- SDL.createTextureFromSurface renderer newSurface
 
   liftIO $ writeIORef renderedRef $ SDLWrapper.SurTex (Just newSurface) (Just newTexture)

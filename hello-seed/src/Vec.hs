@@ -17,6 +17,10 @@ data Vec a = Vec a a deriving ( Show )
 (Vec x1 y1) ~* times = Vec (x1 * times) (y1 * times)
 
 
+divVec :: Integral a => Vec a -> a -> Vec a
+(Vec x1 y1) `divVec` d = Vec (x1 `div` d) (y1 `div` d)
+
+
 type VecF = Vec Float
 
 

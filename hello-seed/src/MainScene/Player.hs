@@ -8,9 +8,9 @@ data Player = Player
   , isAlive :: Bool
   }
 
-initialPlayer :: Player
-initialPlayer = Player
-  { pos = Vec 10 10
+initialPlayer :: VecInt -> Player
+initialPlayer screenSize = Player
+  { pos = toVecF $ screenSize `divVec` 2
   , animCount = 0
   , isAlive = True
   }

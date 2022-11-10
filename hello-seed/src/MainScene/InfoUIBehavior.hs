@@ -19,7 +19,7 @@ refreshInfoUI w = do
 
 renderInfoUI :: (MonadIO m) => World -> InfoUI -> m ()
 renderInfoUI w ui = do
-  updateTextSolid (renderer w) (mplus64 (fontRsc w)) (SDL.V4 255 200 255 255) (pack pos'') (scoreText ui)
+  updateTextBlendedOutlined (renderer w) (outlinedMplus24 (fontRsc w)) (SDL.V4 160 255 120 255) (SDL.V4 120 100 120 255) (pack pos'') (scoreText ui)
   renderPreRenderedText (renderer w) (scoreText ui) (Vec 10 10)
 
   where 

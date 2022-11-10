@@ -31,7 +31,7 @@ withMainScene screenSize' op =  (`runContT` return) $ do
 
   let scene = MainScene
         { sceneState = Title
-        , player = initialPlayer
+        , player = initialPlayer screenSize'
         , background = initialBackground
         , meteorManager = initialMeteorManager
         , harvestManager = initialHarvestManager screenSize'
@@ -43,10 +43,12 @@ withMainScene screenSize' op =  (`runContT` return) $ do
 
 
 initPlaying :: MainScene -> MainScene 
-initPlaying s = s
-  { player = initialPlayer
+initPlaying s = 
+  let size = screenSize s
+  in s
+  { player = initialPlayer size
   , background = initialBackground
   , meteorManager = initialMeteorManager
-  , harvestManager = initialHarvestManager $ screenSize s
+  , harvestManager = initialHarvestManager size
   }
   

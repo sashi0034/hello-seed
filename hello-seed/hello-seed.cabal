@@ -16,6 +16,7 @@ executable hello-seed
                      , World
                      , ImageRsc
                      , FontRsc
+                     , FontOutlined
                      , Rendering
                      , AnimUtil
                      , CollisionUtil
