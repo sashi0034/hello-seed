@@ -1,6 +1,7 @@
 module MainScene.HarvestManager where
 import Vec
 import Rendering
+import Types
 
 
 type ChargingCount = Int
@@ -11,6 +12,7 @@ data Harvest = Harvest
   { animCount :: Int
   , installedPos :: VecInt
   , currState :: HarvestState
+  , justCropped :: MomentFlag
   }
 
 
@@ -32,6 +34,7 @@ initialHarvestManager screenSize = HarvestManager
       { animCount=0
       , installedPos=pos
       , currState = Charging 0
+      , justCropped=False
       }) posList
     spaceX = 24 * pixelartScale
     spaceY = 32 * pixelartScale

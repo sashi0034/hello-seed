@@ -2,7 +2,7 @@ module MainScene.HarvestManagerBehavior where
 import MainScene.HarvestManager
 import Control.Monad.Cont
 import World
-import MainScene.MainScene (MainScene(harvestManager, screenSize, player))
+import MainScene.MainScene
 import Vec
 import Rendering
 import ImageRsc (ImageRsc(corn_24x24))
@@ -25,7 +25,9 @@ refreshHarvestManager w = do
 
 updateHarvest :: World -> Harvest -> Harvest
 updateHarvest w h =
-  let h' = h{ animCount= 1 + animCount h }
+  let h' = h 
+        { animCount= 1 + animCount h
+        , justCropped = False }
   in updateHarvestByState w h' $ currState h'
 
 
@@ -45,8 +47,10 @@ updateHarvestByState w h Ripened =
       isReaped = hitRectRect 
         (ColRect (Player.pos p ~- playerSize ~* 0.5) playerSize)
         (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
-      nextState = if isReaped then Charging 0 else Ripened
-  in h{ currState=nextState }
+      (nextState, cropped) = if isReaped 
+        then (Charging 0, True)
+        else (Ripened, False)
+  in h{ currState=nextState, justCropped=cropped }
 
 
 renderHarvest :: (MonadIO m) => World -> Harvest -> m()

@@ -15,6 +15,7 @@ import MainScene.HarvestManagerBehavior
 import InputState
 import qualified MainScene.Player as Player
 import qualified SDL
+import qualified MainScene.HarvestManager as HarvestManager
 
 
 refreshMainScene :: (MonadIO m) => World -> m MainScene
@@ -39,8 +40,17 @@ checkShiftScene w Playing =
   let s = scene w
       isPlayerAlive = Player.isAlive $ player s
   in if isPlayerAlive
-    then s 
+    then s
     else s {sceneState = Title}
+
+
+calcScore :: MainScene -> Int
+calcScore ms = 
+  let hl = HarvestManager.harvestList $ harvestManager ms
+      curr = currScore $ playingRecord ms
+  in foldr (\h n -> if HarvestManager.justCropped h then n+1 else n) curr hl
+
+
 
 
 refreshByState :: (MonadIO m) => World -> SceneState -> m MainScene
@@ -56,21 +66,29 @@ refreshByState w Title = do
     }
 
 refreshByState w Playing = do
-  
+  let ms = scene w
+
   background' <- refreshBackground w
   harvestManager' <- refreshHarvestManager w
   player' <- refreshPlayer w
   meteorManager' <- refreshMeteorManager w
   infoUI' <- refreshInfoUI w
 
-  return (scene w)
+  return ms
     { player = player'
     , background = background'
     , meteorManager = meteorManager'
     , harvestManager = harvestManager'
     , infoUI = infoUI'
+    , playingRecord = updatePlayingRecord ms
     }
 
 
-
+updatePlayingRecord :: MainScene -> PlayingRecord
+updatePlayingRecord ms = 
+  let pr = playingRecord ms
+      newScore = calcScore ms
+  in pr
+      { currScore = calcScore ms
+      , highScore = max newScore $ highScore pr}
 

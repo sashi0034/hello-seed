@@ -20,6 +20,7 @@ executable hello-seed
                      , Rendering
                      , AnimUtil
                      , CollisionUtil
+                     , Types
                      , MainScene.MainScene
                      , MainScene.MainSceneBehavior
                      , MainScene.Player

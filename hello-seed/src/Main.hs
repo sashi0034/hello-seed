@@ -29,14 +29,15 @@ main :: IO ()
 main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ do
   SDLWrapper.setHintQuality
   let initialWindowSize = Vec 1280 (720 :: Int)
-  SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w ->
-    SDLWrapper.withRenderer w $ \r -> do
-      ImageRsc.loadImageRsc r $ \imageRsc' -> do
-        ImageRsc.loadFontRsc $ \fontRsc' -> do
-          MainScene.withMainScene initialWindowSize $ \scene' -> do
+  
+  SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w -> 
+    SDLWrapper.withRenderer w $ \r -> 
+    ImageRsc.loadImageRsc r $ \imageRsc' -> 
+    ImageRsc.loadFontRsc $ \fontRsc' -> 
+    MainScene.withMainScene initialWindowSize $ \scene' -> do
 
-            let world = World.initialWorld w r imageRsc' fontRsc' initialWindowSize scene'
-            runApp loopApp world
+    let world = World.initialWorld w r imageRsc' fontRsc' initialWindowSize scene'
+    runApp loopApp world
 
 
 runApp :: (Monad m) => (World -> m World) -> World -> m ()

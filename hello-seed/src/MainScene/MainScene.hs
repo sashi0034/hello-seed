@@ -14,8 +14,16 @@ import MainScene.HarvestManager (HarvestManager, initialHarvestManager)
 
 data SceneState = Title | Playing
 
+data PlayingRecord = PlayingRecord
+  { currScore :: Int
+  , highScore :: Int
+  , currLevel :: Int
+  }
+
+
 data MainScene = MainScene
   { sceneState :: SceneState
+  , playingRecord :: PlayingRecord
   , player :: Player
   , background :: Background
   , meteorManager :: MeteorManager
@@ -31,6 +39,7 @@ withMainScene screenSize' op =  (`runContT` return) $ do
 
   let scene = MainScene
         { sceneState = Title
+        , playingRecord = PlayingRecord{ currScore=0, highScore=0, currLevel=1 }
         , player = initialPlayer screenSize'
         , background = initialBackground
         , meteorManager = initialMeteorManager
@@ -46,7 +55,8 @@ initPlaying :: MainScene -> MainScene
 initPlaying s = 
   let size = screenSize s
   in s
-  { player = initialPlayer size
+  { playingRecord = (playingRecord s){currScore=0, currLevel=1}
+  , player = initialPlayer size
   , background = initialBackground
   , meteorManager = initialMeteorManager
   , harvestManager = initialHarvestManager size
