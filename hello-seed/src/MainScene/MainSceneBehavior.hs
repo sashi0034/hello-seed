@@ -16,6 +16,7 @@ import InputState
 import qualified MainScene.Player as Player
 import qualified SDL
 import qualified MainScene.HarvestManager as HarvestManager
+import MainScene.EffectObjectBehavior (refreshEffectObjects)
 
 
 refreshMainScene :: (MonadIO m) => World -> m MainScene
@@ -59,10 +60,12 @@ refreshByState w Title = do
   
   background' <- refreshBackground w
   infoUI' <- refreshInfoUI w
+  effectObjects' <- refreshEffectObjects w
 
   return (scene w)
     { background = background'
     , infoUI = infoUI'
+    , effectObjects = effectObjects'
     }
 
 refreshByState w Playing = do
@@ -71,6 +74,7 @@ refreshByState w Playing = do
   background' <- refreshBackground w
   harvestManager' <- refreshHarvestManager w
   player' <- refreshPlayer w
+  effectObjects' <- refreshEffectObjects w
   meteorManager' <- refreshMeteorManager w
   infoUI' <- refreshInfoUI w
 
@@ -80,6 +84,7 @@ refreshByState w Playing = do
     , meteorManager = meteorManager'
     , harvestManager = harvestManager'
     , infoUI = infoUI'
+    , effectObjects = effectObjects'
     , playingRecord = updatePlayingRecord ms
     }
 

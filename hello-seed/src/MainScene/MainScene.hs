@@ -10,6 +10,7 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad
 import Control.Monad.Cont
 import MainScene.HarvestManager (HarvestManager, initialHarvestManager)
+import MainScene.EffectObject (EffectObject)
 
 
 data SceneState = Title | Playing
@@ -30,6 +31,7 @@ data MainScene = MainScene
   , infoUI :: InfoUI
   , screenSize :: VecInt
   , harvestManager :: HarvestManager
+  , effectObjects :: [] EffectObject
   }
 
 
@@ -46,6 +48,7 @@ withMainScene screenSize' op =  (`runContT` return) $ do
         , harvestManager = initialHarvestManager screenSize'
         , infoUI = infoUI'
         , screenSize = screenSize'
+        , effectObjects = []
         }
 
   op scene

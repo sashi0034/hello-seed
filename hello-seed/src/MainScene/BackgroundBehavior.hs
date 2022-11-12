@@ -12,9 +12,6 @@ import Vec
 import MainScene.MainScene
 import MainScene.Background
 import SDL.Video
-import qualified SDL.Font
-import Data.Text
-import FontRsc
 
 
 

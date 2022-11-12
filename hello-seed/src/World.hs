@@ -6,6 +6,7 @@
 module World
   ( World(..)
   , initialWorld
+  , baseFps
   ) where
 
 import MainScene.MainScene
@@ -18,7 +19,7 @@ import InputState (InputState, noInput)
 
 data World = World
   { exiting :: Bool
-  , baseFps :: Int
+  , currentBaseFps :: Int
   , scene :: MainScene
   , window :: SDL.Window
   , renderer :: SDL.Renderer
@@ -29,10 +30,14 @@ data World = World
   }
 
 
+baseFps :: Int
+baseFps = 60
+
+
 initialWorld :: SDL.Window -> SDL.Renderer -> ImageRsc -> FontRsc -> VecInt -> MainScene -> World
 initialWorld window' renderer' imageRsc' fontRsc' windowSize' initialScene = World
   { exiting = False
-  , baseFps = 60
+  , currentBaseFps = baseFps
   , scene = initialScene
   , window = window'
   , renderer = renderer'

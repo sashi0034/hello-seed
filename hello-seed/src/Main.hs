@@ -73,7 +73,7 @@ controlFpsInApp world process = do
   return world'
 
   where
-    idealFps = fromIntegral $ baseFps world
+    idealFps = fromIntegral $ currentBaseFps world
     idealDuration = 1000 * 1000 * ((1 :: Float) / idealFps)
 
 
