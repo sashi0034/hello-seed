@@ -1,6 +1,6 @@
 
 module MainScene.EffectObjectBehavior where
-import MainScene.EffectObject (EffectObject (OvalElem, OvalGen))
+import MainScene.EffectObject (EffectObject (OvalElem))
 import World
 import Control.Monad.Cont
 import ImageRsc (ImageRenderer (ImageRenderer), ImageRsc (oval_16x16))
@@ -31,30 +31,26 @@ checkBirthNewEffect ms = (checkEffs . checkHarvs) []
   where
     currList = effectObjects ms
 
-    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalGen harv) temp $ harvestList $ harvestManager ms
+    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalElem harv) temp $ harvestList $ harvestManager ms
     checkEffs = \temp -> foldr (\e effs -> effs ++ generateEffect e) temp currList
 
 
--- 
-checkBirthOvalGen :: Harvest -> [EffectObject]
-checkBirthOvalGen harv = [OvalGen 0 $ toVecF $ installedPos harv | justCropped harv]
+checkBirthOvalElem :: Harvest -> [EffectObject]
+checkBirthOvalElem harv = if justCropped harv
+  then
+    [(\ (x, y)
+      -> OvalElem
+        0 (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4)) (Vec 0 $ - 4)
+        $ 2 * abs (2 + y))
+      (x, y) | x <- [- 2 .. 2], y <- [- 2 .. 2]]
+    --map (\i -> OvalElem 0 (toVecF $ pos ~+ (Vec (-i) i ~* pixelartScale)) (Vec 0 $ -4) $ 9 + i) [n | n<-[-9..9], n `mod` 3 == 0]
+  else []
+  where
+    pos = installedPos harv
 
 
 generateEffect :: EffectObject -> [EffectObject]
 
-ovalGenDuration :: Int
-ovalGenDuration = 2
-ovalGenStepRad :: Int
-ovalGenStepRad = 30
-generateEffect (OvalGen count pos) =
-  let
-    num = count `div` ovalGenDuration
-    r = 4 + num * 2
-    rad = pi * fromIntegral num * fromIntegral ovalGenStepRad / (180 :: Float)
-    delta = Vec (cos rad) (sin rad) ~* fromIntegral r
-    v = Vec (cos rad) (sin rad) ~* 2
-  in [OvalElem 0 (pos ~+ delta) v 
-      | count `mod` ovalGenDuration == 0]
 
 
 generateEffect _ = []
@@ -67,9 +63,9 @@ generateEffect _ = []
 
 updateEffect :: MainScene -> EffectObject -> EffectObject
 
-updateEffect _ (OvalGen count pos) = OvalGen (count+1) pos
-
-updateEffect _ (OvalElem count pos vel) = OvalElem (count+1) newPos newVel
+updateEffect _ (OvalElem count pos vel delay) = if delay <= 0
+  then OvalElem (count+1) newPos newVel 0
+  else OvalElem count pos vel $ delay-1
   where
     newPos = pos ~+ vel
     newVel = vel ~+ accel
@@ -83,9 +79,7 @@ updateEffect _ (OvalElem count pos vel) = OvalElem (count+1) newPos newVel
 
 isAliveEffect :: EffectObject -> Bool
 
-isAliveEffect (OvalGen count _) = count < (360 `div` ovalGenStepRad) * ovalGenDuration
-
-isAliveEffect (OvalElem count _ _) = count < (baseFps * 3) `div` 2
+isAliveEffect (OvalElem count _ _ _) = count < (baseFps * 2) `div` 2
 
 
 
@@ -96,9 +90,9 @@ isAliveEffect (OvalElem count _ _) = count < (baseFps * 3) `div` 2
 
 renderEffect :: MonadIO m => ImageRenderer -> EffectObject -> m()
 
-renderEffect (ImageRenderer rsc r) (OvalElem count pos _) = do
-  Rendering.renderTexture 2 r (oval_16x16 rsc)
-    (toVecInt pos) $
+renderEffect (ImageRenderer rsc r) (OvalElem _ pos _ _) = do
+  Rendering.renderTexture 1 r (oval_16x16 rsc)
+    (Vec 1 1~* (-8*1) ~+ toVecInt pos) $
     SrcRect (Vec 0 0) (Vec 16 16)
 
 renderEffect _ _ = return ()

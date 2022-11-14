@@ -73,8 +73,8 @@ refreshByState w Playing = do
 
   background' <- refreshBackground w
   harvestManager' <- refreshHarvestManager w
-  player' <- refreshPlayer w
   effectObjects' <- refreshEffectObjects w
+  player' <- refreshPlayer w
   meteorManager' <- refreshMeteorManager w
   infoUI' <- refreshInfoUI w
 

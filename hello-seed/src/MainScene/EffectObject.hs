@@ -6,11 +6,12 @@ type EffAccel = VecF
 type EffPos = VecF
 type EffVec = VecF
 type FrameCount = Int
+type DelayCount = FrameCount
 
 
 data EffectObject = 
-    OvalGen FrameCount EffPos
-  | OvalElem FrameCount EffPos EffVec
+    OvalElem FrameCount EffPos EffVec DelayCount
+  -- | Some FrameCount
 
 
 
