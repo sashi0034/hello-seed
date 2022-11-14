@@ -22,26 +22,21 @@ import MainScene.MeteorManager (Meteor)
 
 refreshPlayer :: (MonadIO m) => World -> m Player
 refreshPlayer w = do
-  result <- updatePlayer w
-  renderPlayer (renderer w) (imageRsc w) result
-  return result
+  let s = scene w
+  renderPlayer (renderer w) (imageRsc w) $ player s
+  return $ updatePlayer w
 
 
-movePlayer :: World -> VecF -> Player
-movePlayer world deltaPos = player'{pos = deltaPos ~+ currPos}
-  where
-    scene' = scene world
-    player' = player scene'
-    currPos = pos player'
-
-
-updatePlayer :: (MonadIO m) => World -> m Player
-updatePlayer world = do
-  return  player'
-    { pos = calcNewPos currPos mousePos'
-    , animCount = 1 + animCount player'
-    , isAlive = isAlive player' && not (isHitWithMeteorList player' meteors)
-    }
+updatePlayer :: World -> Player
+updatePlayer world = 
+  let newState = updatePlayerState meteors player' $ playerState player'
+  in if isHitStopping scene'
+    then player'{playerState = newState}
+    else player'
+          { pos = calcNewPos currPos mousePos'
+          , animCount = 1 + animCount player'
+          , playerState = newState
+          }
   where
     scene' = scene world
     player' = player scene'
@@ -49,6 +44,16 @@ updatePlayer world = do
 
     currPos = pos player'
     mousePos' =  toVecF $ mousePos $ mouse $ input world
+
+
+updatePlayerState :: [Meteor] -> Player -> PlayerState -> PlayerState
+updatePlayerState mets p Alive = if not $ isHitWithMeteorList p mets
+  then Alive
+  else HitStopping 40 -- 当たった
+updatePlayerState _ _ (HitStopping count) = if count > 0
+  then HitStopping $ count - 1
+  else Dead
+updatePlayerState _ _ state = state
 
 
 isHitWithMeteorList :: Player -> [Meteor] -> Bool

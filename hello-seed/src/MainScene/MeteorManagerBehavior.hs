@@ -1,7 +1,7 @@
 
 module MainScene.MeteorManagerBehavior where
 import MainScene.MeteorManager
-import MainScene.MainScene (MainScene(meteorManager, screenSize))
+import MainScene.MainScene (MainScene(meteorManager, screenSize), isHitStopping)
 import Control.Monad.IO.Class
 import qualified SDL
 import ImageRsc
@@ -96,7 +96,9 @@ checkPopNewMeteor scene count meteors
 refreshMeteorManager :: MonadIO m => World -> m MeteorManager
 refreshMeteorManager w = do
   renderMeteorManager (renderer w) (imageRsc w) (meteorManager $ scene w)
-  updateMeteorManager (scene w)
+  if isHitStopping $ scene w 
+    then return $ meteorManager $ scene w
+    else updateMeteorManager (scene w)
 
 
 updateMeteorManager :: MonadIO m => MainScene -> m MeteorManager

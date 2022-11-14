@@ -13,10 +13,10 @@ import MainScene.MeteorManagerBehavior
 import MainScene.InfoUIBehavior (refreshInfoUI)
 import MainScene.HarvestManagerBehavior
 import InputState
-import qualified MainScene.Player as Player
 import qualified SDL
 import qualified MainScene.HarvestManager as HarvestManager
 import MainScene.EffectObjectBehavior (refreshEffectObjects)
+import MainScene.Player (Player(playerState), isAlivePlayer)
 
 
 refreshMainScene :: (MonadIO m) => World -> m MainScene
@@ -40,7 +40,7 @@ checkShiftScene w Title =
 
 checkShiftScene w Playing =
   let s = scene w
-      isPlayerAlive = Player.isAlive $ player s
+      isPlayerAlive = isAlivePlayer $ playerState $ player s
   in if isPlayerAlive
     then s
     else s {sceneState = Title}

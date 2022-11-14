@@ -72,3 +72,10 @@ initPlaying s =
 justCropped :: MainScene -> Harvest -> Bool
 justCropped ms harv = whenCropped harv == (-1 + sceneFrame ms)
 
+
+isHitStopping :: MainScene -> Bool
+isHitStopping ms = 
+  let ps = playerState $ player ms
+  in case ps of
+      HitStopping _ -> True
+      _ -> False
