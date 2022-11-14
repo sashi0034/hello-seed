@@ -27,7 +27,7 @@ refreshMainScene w = do
 
 
 
-@
+
 checkShiftScene :: World -> SceneState -> MainScene
 checkShiftScene w Title =
   let s = scene w
