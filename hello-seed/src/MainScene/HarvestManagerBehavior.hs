@@ -26,8 +26,7 @@ refreshHarvestManager w = do
 updateHarvest :: World -> Harvest -> Harvest
 updateHarvest w h =
   let h' = h 
-        { animCount= 1 + animCount h
-        , justCropped = False }
+        { animCount= 1 + animCount h }
   in updateHarvestByState w h' $ currState h'
 
 
@@ -48,9 +47,9 @@ updateHarvestByState w h Ripened =
         (ColRect (Player.pos p ~- playerSize ~* 0.5) playerSize)
         (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
       (nextState, cropped) = if isReaped 
-        then (Charging 0, True)
-        else (Ripened, False)
-  in h{ currState=nextState, justCropped=cropped }
+        then (Charging 0, sceneFrame $ scene w) -- 収穫成功
+        else (Ripened, whenCropped h) -- そのまま
+  in h{ currState=nextState, whenCropped = cropped }
 
 
 renderHarvest :: (MonadIO m) => World -> Harvest -> m()

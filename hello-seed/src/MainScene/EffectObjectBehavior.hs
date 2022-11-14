@@ -31,19 +31,19 @@ checkBirthNewEffect ms = (checkEffs . checkHarvs) []
   where
     currList = effectObjects ms
 
-    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalElem harv) temp $ harvestList $ harvestManager ms
+    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalElem ms harv) temp $ harvestList $ harvestManager ms
     checkEffs = \temp -> foldr (\e effs -> effs ++ generateEffect e) temp currList
 
 
-checkBirthOvalElem :: Harvest -> [EffectObject]
-checkBirthOvalElem harv = if justCropped harv
+checkBirthOvalElem :: MainScene -> Harvest -> [EffectObject]
+checkBirthOvalElem ms harv = if justCropped ms harv
   then
-    [(\ (x, y)
-      -> OvalElem
-        0 (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4)) (Vec 0 $ - 4)
+    [(\(x, y) -> OvalElem
+        0 
+        (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4)) 
+        (Vec 0 $ - 4) 
         $ 2 * abs (2 + y))
-      (x, y) | x <- [- 2 .. 2], y <- [- 2 .. 2]]
-    --map (\i -> OvalElem 0 (toVecF $ pos ~+ (Vec (-i) i ~* pixelartScale)) (Vec 0 $ -4) $ 9 + i) [n | n<-[-9..9], n `mod` 3 == 0]
+      (x0, y0) | x0 <- [-2 .. 2], y0 <- [-2 .. 2]]
   else []
   where
     pos = installedPos harv

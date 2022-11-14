@@ -68,9 +68,9 @@ isOutScreen screenSize' meteor = not (isInScreen screenSize' meteor)
 
 
 checkPopNewMeteor :: MonadIO m => MainScene -> Int -> [] Meteor -> m ([] Meteor)
-checkPopNewMeteor scene frameCount meteors
+checkPopNewMeteor scene count meteors
 
-  | (frameCount `mod` popDuration) == 0 = do
+  | (count `mod` popDuration) == 0 = do
     startPosPattern <- liftIO (randomRIO (0, 3) :: IO Int)
     startPos <- liftIO $ calcRandomStartPos startPosPattern screenSize'
 

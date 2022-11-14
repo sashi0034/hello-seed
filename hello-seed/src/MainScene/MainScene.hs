@@ -9,8 +9,9 @@ import MainScene.InfoUI
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad
 import Control.Monad.Cont
-import MainScene.HarvestManager (HarvestManager, initialHarvestManager)
+import MainScene.HarvestManager (HarvestManager, initialHarvestManager, Harvest (whenCropped))
 import MainScene.EffectObject (EffectObject)
+import Types (FrameCount)
 
 
 data SceneState = Title | Playing
@@ -24,6 +25,7 @@ data PlayingRecord = PlayingRecord
 
 data MainScene = MainScene
   { sceneState :: SceneState
+  , sceneFrame :: FrameCount
   , playingRecord :: PlayingRecord
   , player :: Player
   , background :: Background
@@ -35,12 +37,13 @@ data MainScene = MainScene
   }
 
 
-withMainScene :: MonadIO m => VecInt -> (forall (m :: * -> *). (MonadIO m) => MainScene -> m ()) -> m() 
+withMainScene :: MonadIO m => VecInt -> (forall (m :: * -> *). (MonadIO m) => MainScene -> m ()) -> m()
 withMainScene screenSize' op =  (`runContT` return) $ do
   infoUI' <- ContT initialInfoUI
 
   let scene = MainScene
         { sceneState = Title
+        , sceneFrame = 0
         , playingRecord = PlayingRecord{ currScore=0, highScore=0, currLevel=1 }
         , player = initialPlayer screenSize'
         , background = initialBackground
@@ -54,8 +57,8 @@ withMainScene screenSize' op =  (`runContT` return) $ do
   op scene
 
 
-initPlaying :: MainScene -> MainScene 
-initPlaying s = 
+initPlaying :: MainScene -> MainScene
+initPlaying s =
   let size = screenSize s
   in s
   { playingRecord = (playingRecord s){currScore=0, currLevel=1}
@@ -64,4 +67,8 @@ initPlaying s =
   , meteorManager = initialMeteorManager
   , harvestManager = initialHarvestManager size
   }
-  
+
+
+justCropped :: MainScene -> Harvest -> Bool
+justCropped ms harv = whenCropped harv == (-1 + sceneFrame ms)
+

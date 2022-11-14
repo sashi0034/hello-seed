@@ -21,23 +21,24 @@ import MainScene.EffectObjectBehavior (refreshEffectObjects)
 
 refreshMainScene :: (MonadIO m) => World -> m MainScene
 refreshMainScene w = do
-  let w' = w { scene=checkShiftScene w $ sceneState $ scene w }
+  let nextFrame = 1 + sceneFrame (scene w)
+  let w' = w { scene=(checkShiftScene w $ sceneState $ scene w) { sceneFrame = nextFrame } }
   refreshByState w' $ sceneState $ scene w'
 
 
 
-
+@
 checkShiftScene :: World -> SceneState -> MainScene
-checkShiftScene w Title = 
+checkShiftScene w Title =
   let s = scene w
       butt = mouseButton $ mouse $ input w
       isClicked = butt SDL.ButtonLeft
-  in if isClicked 
+  in if isClicked
     then initPlaying $ s {sceneState = Playing}
     else s
 
 
-checkShiftScene w Playing = 
+checkShiftScene w Playing =
   let s = scene w
       isPlayerAlive = Player.isAlive $ player s
   in if isPlayerAlive
@@ -46,10 +47,10 @@ checkShiftScene w Playing =
 
 
 calcScore :: MainScene -> Int
-calcScore ms = 
+calcScore ms =
   let hl = HarvestManager.harvestList $ harvestManager ms
       curr = currScore $ playingRecord ms
-  in foldr (\h n -> if HarvestManager.justCropped h then n+1 else n) curr hl
+  in foldr (\h n -> if justCropped ms h then n+1 else n) curr hl
 
 
 
@@ -57,7 +58,7 @@ calcScore ms =
 refreshByState :: (MonadIO m) => World -> SceneState -> m MainScene
 
 refreshByState w Title = do
-  
+
   background' <- refreshBackground w
   infoUI' <- refreshInfoUI w
   effectObjects' <- refreshEffectObjects w
@@ -90,7 +91,7 @@ refreshByState w Playing = do
 
 
 updatePlayingRecord :: MainScene -> PlayingRecord
-updatePlayingRecord ms = 
+updatePlayingRecord ms =
   let pr = playingRecord ms
       newScore = calcScore ms
   in pr

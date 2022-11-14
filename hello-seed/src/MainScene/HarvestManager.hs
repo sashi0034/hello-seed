@@ -12,12 +12,12 @@ data Harvest = Harvest
   { animCount :: Int
   , installedPos :: VecInt
   , currState :: HarvestState
-  , justCropped :: MomentFlag
+  , whenCropped :: FrameCount
   }
 
 
 maxChargingCount :: Int
-maxChargingCount = 300
+maxChargingCount = 60 --300
 
 
 data HarvestManager = HarvestManager
@@ -34,7 +34,7 @@ initialHarvestManager screenSize = HarvestManager
       { animCount=0
       , installedPos=pos
       , currState = Charging 0
-      , justCropped=False
+      , whenCropped = -1
       }) posList
     spaceX = 24 * pixelartScale
     spaceY = 32 * pixelartScale
