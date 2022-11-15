@@ -1,6 +1,6 @@
 module MainScene.Player where
 import Vec
-import Types (FrameCount)
+import Types (FrameCount, LeftFrame)
 
 
 data Player = Player
@@ -9,7 +9,7 @@ data Player = Player
   , playerState :: PlayerState
   }
 
-data PlayerState = Alive | HitStopping FrameCount | Dead 
+data PlayerState = Alive | HitStopping LeftFrame | Dead FrameCount
   deriving (Eq)
 
 
@@ -22,8 +22,13 @@ initialPlayer screenSize = Player
 
 
 isAlivePlayer :: PlayerState -> Bool
-isAlivePlayer Dead = False
-isAlivePlayer _ = True
+isAlivePlayer Alive = True
+isAlivePlayer _ = False
+
+
+countAfterDiedPlayer :: PlayerState -> Int
+countAfterDiedPlayer (Dead count) = count
+countAfterDiedPlayer _ = 0
 
 
 playerSize :: Vec Int

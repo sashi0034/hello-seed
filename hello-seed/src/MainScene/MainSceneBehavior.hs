@@ -16,7 +16,7 @@ import InputState
 import qualified SDL
 import qualified MainScene.HarvestManager as HarvestManager
 import MainScene.EffectObjectBehavior (refreshEffectObjects)
-import MainScene.Player (Player(playerState), isAlivePlayer)
+import MainScene.Player
 
 
 refreshMainScene :: (MonadIO m) => World -> m MainScene
@@ -40,8 +40,8 @@ checkShiftScene w Title =
 
 checkShiftScene w Playing =
   let s = scene w
-      isPlayerAlive = isAlivePlayer $ playerState $ player s
-  in if isPlayerAlive
+      isContinued = countAfterDiedPlayer (playerState $ player s) < baseFps * 3
+  in if isContinued
     then s
     else s {sceneState = Title}
 

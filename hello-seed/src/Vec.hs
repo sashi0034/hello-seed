@@ -56,3 +56,6 @@ normalize (Vec x y) = Vec (x / size) (y / size)
 vecZero :: (Num a) => Vec a
 vecZero = Vec 0 0
 
+
+vecUnit :: (Num a) => Vec a
+vecUnit = Vec 1 1

@@ -11,7 +11,7 @@ type DelayCount = FrameCount
 
 data EffectObject = 
     OvalElem FrameCount EffPos EffVec DelayCount
-  -- | Some FrameCount
+  | BlobElem FrameCount EffPos EffVec
 
 
 

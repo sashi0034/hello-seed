@@ -11,7 +11,6 @@ import Data.Text              (Text)
 import SDL (($=))
 import qualified GHC.IO as SDL
 import Data.IORef
-import Linear.V2
 
 -- 参考: https://github.com/palf/haskell-sdl2-examples
 

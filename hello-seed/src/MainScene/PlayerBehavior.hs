@@ -28,9 +28,9 @@ refreshPlayer w = do
 
 
 updatePlayer :: World -> Player
-updatePlayer world = 
+updatePlayer world =
   let newState = updatePlayerState meteors player' $ playerState player'
-  in if isHitStopping scene'
+  in if isHitStopping scene' || not (isAlivePlayer newState)
     then player'{playerState = newState}
     else player'
           { pos = calcNewPos currPos mousePos'
@@ -52,7 +52,8 @@ updatePlayerState mets p Alive = if not $ isHitWithMeteorList p mets
   else HitStopping 40 -- 当たった
 updatePlayerState _ _ (HitStopping count) = if count > 0
   then HitStopping $ count - 1
-  else Dead
+  else Dead 0
+updatePlayerState _ _ (Dead count) = Dead $ 1 + count
 updatePlayerState _ _ state = state
 
 
@@ -81,8 +82,10 @@ calcNewPos currPos inputPos
 
 
 renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> Player -> m ()
-renderPlayer r rsc player' = do
-  Rendering.renderPixelartCentral r (blobwob_24x24 rsc) dest $ SrcRect src cellSize
+renderPlayer r rsc player' = 
+  case playerState player' of
+    Dead _ -> return ()
+    _ -> Rendering.renderPixelartCentral r (blobwob_24x24 rsc) dest $ SrcRect src cellSize
 
   where
     frameDuration = 10

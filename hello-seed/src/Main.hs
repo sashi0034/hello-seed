@@ -29,11 +29,11 @@ main :: IO ()
 main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ do
   SDLWrapper.setHintQuality
   let initialWindowSize = Vec 1280 (720 :: Int)
-  
-  SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w -> 
-    SDLWrapper.withRenderer w $ \r -> 
-    ImageRsc.loadImageRsc r $ \imageRsc' -> 
-    ImageRsc.loadFontRsc $ \fontRsc' -> 
+
+  SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w ->
+    SDLWrapper.withRenderer w $ \r ->
+    ImageRsc.loadImageRsc r $ \imageRsc' ->
+    ImageRsc.loadFontRsc $ \fontRsc' ->
     MainScene.withMainScene initialWindowSize $ \scene' -> do
 
     let world = World.initialWorld w r imageRsc' fontRsc' initialWindowSize scene'
@@ -65,7 +65,7 @@ controlFpsInApp world process = do
   loopEndTime <- liftIO getCurrentTime
 
   let deltaTime = diffUTCTime loopEndTime loopStartTime
-  let realDuration = 1000 * 1000 * (fromRational $ toRational deltaTime)
+  let realDuration = 1000 * 1000 * fromRational (toRational deltaTime)
   let sleepDuration = idealDuration - realDuration
 
   liftIO $ threadDelay $ floor sleepDuration

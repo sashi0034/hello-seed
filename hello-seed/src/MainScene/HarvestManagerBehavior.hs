@@ -9,6 +9,7 @@ import ImageRsc (ImageRsc(corn_24x24))
 import AnimUtil
 import CollisionUtil (hitRectRect, ColRect (ColRect))
 import qualified MainScene.Player as Player
+import MainScene.Player (isAlivePlayer, Player (playerState))
 
 
 refreshHarvestManager :: (MonadIO m) => World -> m HarvestManager
@@ -46,7 +47,7 @@ updateHarvestByState w h Ripened =
       isReaped = hitRectRect 
         (ColRect (Player.pos p ~- playerSize ~* 0.5) playerSize)
         (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
-      (nextState, cropped) = if isReaped 
+      (nextState, cropped) = if isReaped && isAlivePlayer (playerState p)
         then (Charging 0, sceneFrame $ scene w) -- 収穫成功
         else (Ripened, whenCropped h) -- そのまま
   in h{ currState=nextState, whenCropped = cropped }
