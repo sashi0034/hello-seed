@@ -117,6 +117,5 @@ renderEffect (ImageRenderer rsc r) (BlobElem _ pos _) = do
     (toVecInt pos) $
     SrcRect (Vec 0 0) (Vec 16 16)
 
-renderEffect _ _ = return ()
 
 

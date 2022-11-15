@@ -6,9 +6,10 @@ import Control.Monad.IO.Class
 
 
 data InfoUI = InfoUI
-  { scoreText :: IORef RenderedText
-  , highScoreText :: IORef RenderedText
-  , levelText :: IORef RenderedText
+  { textScore :: IORef RenderedText
+  , textHighScore :: IORef RenderedText
+  , textLevel :: IORef RenderedText
+  , textGameOver :: IORef RenderedText
   }
 
 
@@ -17,11 +18,13 @@ initialInfoUI op =
   withNewSurTexRef $ \score ->
   withNewSurTexRef $ \highScore ->
   withNewSurTexRef $ \level ->
+  withNewSurTexRef $ \gameOver ->
 
     op $ InfoUI 
-      { scoreText=score
-      , highScoreText=highScore
-      , levelText = level
+      { textScore=score
+      , textHighScore=highScore
+      , textLevel = level
+      , textGameOver = gameOver
       }
 
 

@@ -112,3 +112,9 @@ renderPreRenderedText r textRef pos = do
   mapM_ render tex
 
 
+getSizeOfRenderedText :: (MonadIO m) => IORef RenderedText -> m VecInt
+getSizeOfRenderedText textRef = do
+  (SDLWrapper.SurTex _ tex0) <- liftIO $ readIORef textRef
+  case tex0 of
+    (Just tex) -> getTextureSize tex
+    Nothing -> return $ Vec 0 0
