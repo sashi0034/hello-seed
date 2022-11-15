@@ -1,4 +1,4 @@
-module MainScene.InfoUIBehavior where
+module MainScene.InfoUIBehavior(refreshInfoUI) where
 import Control.Monad.Cont
 import qualified SDL
 import MainScene.InfoUI
@@ -10,6 +10,7 @@ import World
 import MainScene.MainScene
 import Data.IORef
 import MainScene.Player
+import qualified SDL.Font
 
 
 refreshInfoUI :: (MonadIO m) => World -> m InfoUI
@@ -25,14 +26,28 @@ renderInfoUI w ui = do
   let leftTop = Vec 64 32
   let rightTop = Vec (getX (screenSize ms) - 64) 32
   let space = 32
-  renderText w (pack score) (textScore ui) leftTop LeftTop
-  renderText w (pack high) (textHighScore ui) (leftTop ~+ Vec 0 space) LeftTop
+  renderText w score (textScore ui) leftTop LeftTop DefaultStyle
+  renderText w high (textHighScore ui) (leftTop ~+ Vec 0 space) LeftTop DefaultStyle
 
-  renderText w (pack lv) (textLevel ui) rightTop RightTop
+  renderText w lv (textLevel ui) rightTop RightTop DefaultStyle
 
-  when 
-    (countAfterDiedPlayer (playerState $ player ms) > 0)
-    $ renderText w (pack gameOver) (textGameOver ui) (screenSize ms `divVec` 2) MiddleCenter
+  when
+    -- Game Over
+    (sceneState ms == Playing && countAfterDiedPlayer (playerState $ player ms) > 0)
+    $ renderText w "Game Over" (textGameOver ui) 
+        (screenSize ms `divVec` 2) 
+        MiddleCenter $ Header $ SDL.V4 255 120 80 255
+
+  when
+    -- Title
+    (sceneState ms == Title)
+    $ do 
+      renderText w "Full Up Blobwov" (textTitle ui) 
+        (screenSize ms `divVec` 2) 
+        MiddleCenter $ Header $ SDL.V4 200 255 80 255
+      renderText w "Press Left Click To Start" (textTitlePas ui) 
+        (screenSize ms `divVec` 2 ~+ Vec 0 128) 
+        MiddleCenter DefaultStyle
 
 
   where
@@ -41,18 +56,32 @@ renderInfoUI w ui = do
     score = "Curr Score :  " ++ show (currScore pr)
     high  = "High Score :  " ++ show (highScore pr)
     lv = "Level :  " ++ show (currLevel pr)
-    gameOver = "Game Over"
 
 
 data TextAlign = LeftTop | RightTop | MiddleCenter
 
 
-renderText :: MonadIO m => World -> Text -> IORef RenderedText -> VecInt -> TextAlign -> m ()
-renderText w str tex start align = do
-  updateTextBlendedOutlined
-    (renderer w) (outlinedMplus24 (fontRsc w))
-    (SDL.V4 160 255 120 255) (SDL.V4 120 100 120 255)
-    str tex
+data Style = DefaultStyle | Header SDL.Font.Color
+
+
+renderText :: MonadIO m => World -> String -> TextTexCache -> VecInt -> TextAlign -> Style -> m ()
+renderText w str (TextTexCache tex buff) start align style = do
+  beforeBuff <- liftIO $ readIORef buff
+  
+  when 
+    -- キャッシュを取ってテキストに変化があるときだけ描画する
+    (beforeBuff /= str) 
+    $ do 
+      liftIO $ writeIORef buff str
+      case style of
+        DefaultStyle -> updateTextBlendedOutlined
+          (renderer w) (outlinedMplus24 (fontRsc w))
+          (SDL.V4 160 255 120 255) (SDL.V4 120 100 120 255)
+          (pack str) tex
+        Header color -> updateTextBlendedOutlined
+          (renderer w) (outlinedMplus96 (fontRsc w))
+          color (SDL.V4 80 80 80 255)
+          (pack str) tex
 
   start' <- case align of
         LeftTop -> return start

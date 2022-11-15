@@ -14,7 +14,7 @@ import MainScene.EffectObject (EffectObject)
 import Types (FrameCount)
 
 
-data SceneState = Title | Playing
+data SceneState = Title | Playing deriving (Eq)
 
 data PlayingRecord = PlayingRecord
   { currScore :: Int
