@@ -1,4 +1,4 @@
-module MainScene.EffectObject where
+module Scene.EffectObject where
 import Vec (VecF)
 import Types
 

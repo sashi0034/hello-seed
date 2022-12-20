@@ -13,7 +13,6 @@ executable hello-seed
                      , InputIntent
                      , InputState
                      , Vec
-                     , World
                      , ImageRsc
                      , FontRsc
                      , FontOutlined
@@ -21,20 +20,20 @@ executable hello-seed
                      , AnimUtil
                      , CollisionUtil
                      , Types
-                     , MainScene.MainScene
-                     , MainScene.MainSceneBehavior
-                     , MainScene.Player
-                     , MainScene.PlayerBehavior
-                     , MainScene.Background
-                     , MainScene.BackgroundBehavior
-                     , MainScene.MeteorManager
-                     , MainScene.MeteorManagerBehavior
-                     , MainScene.InfoUI
-                     , MainScene.InfoUIBehavior
-                     , MainScene.HarvestManager
-                     , MainScene.HarvestManagerBehavior
-                     , MainScene.EffectObject
-                     , MainScene.EffectObjectBehavior
+                     , Scene.Scene
+                     , Scene.SceneBehavior
+                     , Scene.Player
+                     , Scene.PlayerBehavior
+                     , Scene.Background
+                     , Scene.BackgroundBehavior
+                     , Scene.MeteorManager
+                     , Scene.MeteorManagerBehavior
+                     , Scene.InfoUI
+                     , Scene.InfoUIBehavior
+                     , Scene.HarvestManager
+                     , Scene.HarvestManagerBehavior
+                     , Scene.EffectObject
+                     , Scene.EffectObjectBehavior
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:       base
                      , sdl2

@@ -1,45 +1,43 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 
-module MainScene.EffectObjectBehavior where
-import MainScene.EffectObject (EffectObject (OvalElem, BlobElem))
-import World
+module Scene.EffectObjectBehavior where
+import Scene.EffectObject (EffectObject (OvalElem, BlobElem))
 import Control.Monad.Cont
 import ImageRsc (ImageRenderer (ImageRenderer), ImageRsc (oval_16x16, crying_laughing_16x16))
 import Vec
 import Rendering
-import MainScene.MainScene
-import MainScene.HarvestManager
-import MainScene.Player as Player
+import Scene.Scene
+import Scene.HarvestManager
+import Scene.Player as Player
 
 
-refreshEffectObjects :: (MonadIO m) => World -> m [EffectObject]
-refreshEffectObjects w = do
-  forM_ effects $ renderEffect $ ImageRenderer (imageRsc w) (renderer w)
+refreshEffectObjects :: (MonadIO m) => Scene -> m [EffectObject]
+refreshEffectObjects s = do
+  forM_ effects $ renderEffect $ ImageRenderer (imageRsc $ env s) (renderer $ env s)
   --liftIO $ print $ length effects
   let updatedList =
         filter isAliveEffect $
-        map (updateEffect ms)
+        map (updateEffect s)
         effects
-  return $ checkBirthNewEffect ms ++ updatedList
+  return $ checkBirthNewEffect s ++ updatedList
   where
-    ms = scene w
-    effects = effectObjects ms
+    effects = effectObjects s
 
 
 
 
-checkBirthNewEffect :: MainScene -> [EffectObject]
-checkBirthNewEffect ms = (checkPlayer . checkEffs . checkHarvs) []
+checkBirthNewEffect :: Scene -> [EffectObject]
+checkBirthNewEffect s = (checkPlayer . checkEffs . checkHarvs) []
   where
-    currList = effectObjects ms
+    currList = effectObjects s
 
-    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalElem ms harv) temp $ harvestList $ harvestManager ms
-    checkPlayer = \temp -> temp ++ checkBirthBlobElem ms
+    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalElem s harv) temp $ harvestList $ harvestManager s
+    checkPlayer = \temp -> temp ++ checkBirthBlobElem s
     checkEffs = \temp -> foldr (\e effs -> effs ++ generateEffect e) temp currList
 
 
-checkBirthOvalElem :: MainScene -> Harvest -> [EffectObject]
-checkBirthOvalElem ms harv = if justCropped ms harv
+checkBirthOvalElem :: Scene -> Harvest -> [EffectObject]
+checkBirthOvalElem s harv = if justCropped s harv
   then
     [(\(x, y) -> OvalElem
         0 
@@ -51,9 +49,9 @@ checkBirthOvalElem ms harv = if justCropped ms harv
   where
     pos = installedPos harv
 
-checkBirthBlobElem :: MainScene -> [EffectObject]
-checkBirthBlobElem ms = case sceneState ms of
-  Playing -> let p = player ms in case playerState p of
+checkBirthBlobElem :: Scene -> [EffectObject]
+checkBirthBlobElem s = case sceneState s of
+  Playing -> let p = player s in case playerState p of
     (Player.Dead count) | count `mod` interval==0 -> 
       [BlobElem 0 start (v i ~* speed) | i <- [-6 .. 6]]
       where 
@@ -76,7 +74,7 @@ generateEffect _ = []
 
 
 
-updateEffect :: MainScene -> EffectObject -> EffectObject
+updateEffect :: Scene -> EffectObject -> EffectObject
 
 updateEffect _ (OvalElem count pos vel delay) = if delay <= 0
   then OvalElem (count+1) newPos newVel 0

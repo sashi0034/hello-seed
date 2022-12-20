@@ -1,58 +1,55 @@
-module MainScene.InfoUIBehavior(refreshInfoUI) where
+module Scene.InfoUIBehavior(refreshInfoUI) where
 import Control.Monad.Cont
 import qualified SDL
-import MainScene.InfoUI
+import Scene.InfoUI
 import Rendering
 import Vec
 import Data.Text
 import FontRsc
-import World
-import MainScene.MainScene
+import Scene.Scene
 import Data.IORef
-import MainScene.Player
+import Scene.Player
 import qualified SDL.Font
 
 
-refreshInfoUI :: (MonadIO m) => World -> m InfoUI
-refreshInfoUI w = do
-  renderInfoUI w $ infoUI $ scene w
-  return $ infoUI $ scene w
+refreshInfoUI :: (MonadIO m) => Scene -> m InfoUI
+refreshInfoUI s = do
+  renderInfoUI s $ infoUI $ s
+  return $ infoUI $ s
 
 
-renderInfoUI :: (MonadIO m) => World -> InfoUI -> m ()
-renderInfoUI w ui = do
-  let ms= scene w
+renderInfoUI :: (MonadIO m) => Scene -> InfoUI -> m ()
+renderInfoUI s ui = do
 
   let leftTop = Vec 64 32
-  let rightTop = Vec (getX (screenSize ms) - 64) 32
+  let rightTop = Vec (getX (screenSize s) - 64) 32
   let space = 32
-  renderText w score (textScore ui) leftTop LeftTop DefaultStyle
-  renderText w high (textHighScore ui) (leftTop ~+ Vec 0 space) LeftTop DefaultStyle
+  renderText s score (textScore ui) leftTop LeftTop DefaultStyle
+  renderText s high (textHighScore ui) (leftTop ~+ Vec 0 space) LeftTop DefaultStyle
 
-  renderText w lv (textLevel ui) rightTop RightTop DefaultStyle
+  renderText s lv (textLevel ui) rightTop RightTop DefaultStyle
 
   when
     -- Game Over
-    (sceneState ms == Playing && countAfterDiedPlayer (playerState $ player ms) > 0)
-    $ renderText w "Game Over" (textGameOver ui) 
-        (screenSize ms `divVec` 2) 
+    (sceneState s == Playing && countAfterDiedPlayer (playerState $ player s) > 0)
+    $ renderText s "Game Over" (textGameOver ui) 
+        (screenSize s `divVec` 2) 
         MiddleCenter $ Header $ SDL.V4 255 120 80 255
 
   when
     -- Title
-    (sceneState ms == Title)
+    (sceneState s == Title)
     $ do 
-      renderText w "Full Up Blobwov" (textTitle ui) 
-        (screenSize ms `divVec` 2) 
+      renderText s "Full Up Blobwov" (textTitle ui) 
+        (screenSize s `divVec` 2) 
         MiddleCenter $ Header $ SDL.V4 200 255 80 255
-      renderText w "Press Left Click To Start" (textTitlePas ui) 
-        (screenSize ms `divVec` 2 ~+ Vec 0 128) 
+      renderText s "Press Left Click To Start" (textTitlePas ui) 
+        (screenSize s `divVec` 2 ~+ Vec 0 128) 
         MiddleCenter DefaultStyle
 
 
   where
-    ms = scene w
-    pr = playingRecord ms
+    pr = playingRecord s
     score = "Curr Score :  " ++ show (currScore pr)
     high  = "High Score :  " ++ show (highScore pr)
     lv = "Level :  " ++ show (currLevel pr)
@@ -64,8 +61,8 @@ data TextAlign = LeftTop | RightTop | MiddleCenter
 data Style = DefaultStyle | Header SDL.Font.Color
 
 
-renderText :: MonadIO m => World -> String -> TextTexCache -> VecInt -> TextAlign -> Style -> m ()
-renderText w str (TextTexCache tex buff) start align style = do
+renderText :: MonadIO m => Scene -> String -> TextTexCache -> VecInt -> TextAlign -> Style -> m ()
+renderText s str (TextTexCache tex buff) start align style = do
   beforeBuff <- liftIO $ readIORef buff
   
   when 
@@ -75,11 +72,11 @@ renderText w str (TextTexCache tex buff) start align style = do
       liftIO $ writeIORef buff str
       case style of
         DefaultStyle -> updateTextBlendedOutlined
-          (renderer w) (outlinedMplus24 (fontRsc w))
+          (renderer $ env s) (outlinedMplus24 (fontRsc $ env s))
           (SDL.V4 160 255 120 255) (SDL.V4 120 100 120 255)
           (pack str) tex
         Header color -> updateTextBlendedOutlined
-          (renderer w) (outlinedMplus96 (fontRsc w))
+          (renderer $ env s) (outlinedMplus96 (fontRsc $ env s))
           color (SDL.V4 80 80 80 255)
           (pack str) tex
 
@@ -92,4 +89,4 @@ renderText w str (TextTexCache tex buff) start align style = do
           texSize <- getSizeOfRenderedText tex
           return $ start ~- (texSize `divVec` 2)
 
-  renderPreRenderedText (renderer w) tex start'
+  renderPreRenderedText (renderer $ env s) tex start'

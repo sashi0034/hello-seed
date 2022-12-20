@@ -1,4 +1,4 @@
-module MainScene.HarvestManager where
+module Scene.HarvestManager where
 import Vec
 import Rendering
 import Types

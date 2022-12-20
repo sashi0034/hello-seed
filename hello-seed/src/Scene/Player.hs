@@ -1,4 +1,4 @@
-module MainScene.Player where
+module Scene.Player where
 import Vec
 import Types (FrameCount, LeftFrame)
 

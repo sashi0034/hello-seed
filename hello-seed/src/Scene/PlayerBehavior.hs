@@ -1,36 +1,34 @@
 
-module MainScene.PlayerBehavior
+module Scene.PlayerBehavior
 ( refreshPlayer
 ) where
 
 
-import World
-import MainScene.MainScene
+import Scene.Scene
 import Vec
 import qualified SDL
 import Control.Monad.IO.Class
-import ImageRsc
+import ImageRsc ( ImageRsc(blobwob_24x24) )
 import InputState
-import MainScene.Player
+import Scene.Player
 import qualified Rendering
 import Rendering (SrcRect(SrcRect))
 import AnimUtil (calcAnimFrameIndex)
 import CollisionUtil (hitRectRect, ColRect (ColRect))
-import qualified MainScene.MeteorManager as MeteorManager
-import MainScene.MeteorManager (Meteor)
+import qualified Scene.MeteorManager as MeteorManager
+import Scene.MeteorManager (Meteor)
 
 
-refreshPlayer :: (MonadIO m) => World -> m Player
-refreshPlayer w = do
-  let s = scene w
-  renderPlayer (renderer w) (imageRsc w) $ player s
-  return $ updatePlayer w
+refreshPlayer :: (MonadIO m) => Scene -> m Player
+refreshPlayer s = do
+  renderPlayer (renderer $ env s) (imageRsc $ env s) $ player s
+  return $ updatePlayer s
 
 
-updatePlayer :: World -> Player
-updatePlayer world =
+updatePlayer :: Scene -> Player
+updatePlayer s =
   let newState = updatePlayerState meteors player' $ playerState player'
-  in if isHitStopping scene' || not (isAlivePlayer newState)
+  in if isHitStopping s || not (isAlivePlayer newState)
     then player'{playerState = newState}
     else player'
           { pos = calcNewPos currPos mousePos'
@@ -38,12 +36,11 @@ updatePlayer world =
           , playerState = newState
           }
   where
-    scene' = scene world
-    player' = player scene'
-    meteors = MeteorManager.meteorList $ meteorManager scene'
+    player' = player s
+    meteors = MeteorManager.meteorList $ meteorManager s
 
     currPos = pos player'
-    mousePos' =  toVecF $ mousePos $ mouse $ input world
+    mousePos' =  toVecF $ mousePos $ mouse $ input $ env s
 
 
 updatePlayerState :: [Meteor] -> Player -> PlayerState -> PlayerState

@@ -1,27 +1,26 @@
 
-module MainScene.BackgroundBehavior
+module Scene.BackgroundBehavior
 ( refreshBackground
 ) where
 
 import Control.Monad.IO.Class
 import qualified SDL
 import ImageRsc
-import World
 import qualified SDLWrapper
 import Vec
-import MainScene.MainScene
-import MainScene.Background
+import Scene.Scene
+import Scene.Background
 import SDL.Video
 
 
 
-refreshBackground :: MonadIO m => World -> m Background
-refreshBackground world = do
-  renderBackground (renderer world) (imageRsc world) world
-  updateBackground (scene world)
+refreshBackground :: MonadIO m => Scene -> m Background
+refreshBackground s = do
+  renderBackground (renderer $ env s) (imageRsc $ env s) s
+  updateBackground s
 
 
-updateBackground :: MonadIO m => MainScene -> m Background
+updateBackground :: MonadIO m => Scene -> m Background
 updateBackground scene = do
   return background' { animCount = animCount background' + 1 }
   where
@@ -29,8 +28,8 @@ updateBackground scene = do
 
 
 
-renderBackground :: (MonadIO m) => SDL.Renderer -> ImageRsc -> World -> m ()
-renderBackground r imageRsc world = do
+renderBackground :: (MonadIO m) => SDL.Renderer -> ImageRsc -> Scene -> m ()
+renderBackground r imageRsc s = do
   --liftIO $ print $ animCount $ background $ scene world
 
   let bgTexture = blue_bg imageRsc
@@ -51,9 +50,9 @@ renderBackground r imageRsc world = do
 
   where
     dest = SDLWrapper.makeRect 0 0 (fromIntegral $ getX size) (fromIntegral $ getY size)
-    size = World.windowSize world
+    size = screenSize s
 
-    currPhase = (fromIntegral (animCount $ background $ scene world) / 180) * pi :: Float
+    currPhase = (fromIntegral (animCount $ background $ s) / 180) * pi :: Float
     maxAmp = 200 :: Float
     currAmp = maxAmp * sin currPhase
 

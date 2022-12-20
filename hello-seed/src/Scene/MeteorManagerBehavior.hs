@@ -1,7 +1,7 @@
 
-module MainScene.MeteorManagerBehavior where
-import MainScene.MeteorManager
-import MainScene.MainScene (MainScene(meteorManager, screenSize), isHitStopping)
+module Scene.MeteorManagerBehavior where
+import Scene.MeteorManager
+import Scene.Scene (Scene(meteorManager, screenSize, env), isHitStopping, Environment (renderer, imageRsc))
 import Control.Monad.IO.Class
 import qualified SDL
 import ImageRsc
@@ -11,11 +11,10 @@ import Rendering (SrcRect(SrcRect))
 import Control.Monad
 import System.Random
 import AnimUtil (calcAnimFrameIndex)
-import World (World(scene, imageRsc, renderer))
 
 
 
-updateMeteor :: MainScene -> Meteor -> Meteor
+updateMeteor :: Scene -> Meteor -> Meteor
 updateMeteor scene meteor = meteor
   { currPos = newPos
   , animCount = newAnimCount
@@ -67,7 +66,7 @@ isOutScreen :: VecInt -> Meteor -> Bool
 isOutScreen screenSize' meteor = not (isInScreen screenSize' meteor)
 
 
-checkPopNewMeteor :: MonadIO m => MainScene -> Int -> [] Meteor -> m ([] Meteor)
+checkPopNewMeteor :: MonadIO m => Scene -> Int -> [] Meteor -> m ([] Meteor)
 checkPopNewMeteor scene count meteors
 
   | (count `mod` popDuration) == 0 = do
@@ -93,15 +92,15 @@ checkPopNewMeteor scene count meteors
 
 
 
-refreshMeteorManager :: MonadIO m => World -> m MeteorManager
-refreshMeteorManager w = do
-  renderMeteorManager (renderer w) (imageRsc w) (meteorManager $ scene w)
-  if isHitStopping $ scene w 
-    then return $ meteorManager $ scene w
-    else updateMeteorManager (scene w)
+refreshMeteorManager :: MonadIO m => Scene -> m MeteorManager
+refreshMeteorManager s = do
+  renderMeteorManager (renderer $ env s) (imageRsc $ env s) (meteorManager s)
+  if isHitStopping s
+    then return $ meteorManager s
+    else updateMeteorManager s
 
 
-updateMeteorManager :: MonadIO m => MainScene -> m MeteorManager
+updateMeteorManager :: MonadIO m => Scene -> m MeteorManager
 updateMeteorManager scene = do
   greaterMeteorList <- checkPopNewMeteor scene newFrameCount' (meteorList meteorManager')
   let updatedMeteorList = 
