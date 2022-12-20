@@ -17,7 +17,7 @@ data Harvest = Harvest
 
 
 maxChargingCount :: Int
-maxChargingCount = 60 --300
+maxChargingCount = 300
 
 
 data HarvestManager = HarvestManager
