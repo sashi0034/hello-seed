@@ -1,4 +1,4 @@
-module Scene.HarvestManagerBehavior (harvestManagerAct) where
+module Scene.HarvestManagerAct (harvestManagerAct) where
 import Scene.HarvestManager
 import Control.Monad.Cont
 import Scene.Scene
@@ -11,6 +11,7 @@ import qualified Scene.Player as Player
 import Scene.Player (isAlivePlayer, Player (playerState))
 
 
+harvestManagerAct :: ActorAct
 harvestManagerAct = ActorAct 
   (ActorUpdate updateHarvestManager)
   (ActorActive $ activeInSceneWhen Playing)
@@ -52,7 +53,7 @@ updateHarvestByState s h Ripened =
       playerSize = toVecF Player.playerSize
       thisSize = toVecF harvestCellSize
       isReaped = hitRectRect 
-        (ColRect (Player.pos p ~- playerSize ~* 0.5) playerSize)
+        (ColRect (Player.playerPos p ~- playerSize ~* 0.5) playerSize)
         (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
       (nextState, cropped) = if isReaped && isAlivePlayer (playerState p)
         then (Charging 0, sceneFrame s) -- 収穫成功

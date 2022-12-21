@@ -14,7 +14,7 @@ import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.StateVar
 import ImageRsc
 import InputState ( readInput, InputState(intents) )
-import qualified Scene.SceneBehavior as SceneBehavior
+import qualified Scene.SceneAct as SceneAct
 import Vec (Vec(Vec), getY, getX)
 import Data.Time
 import Control.Concurrent (threadDelay)
@@ -22,7 +22,7 @@ import SDL.Font ()
 import qualified FontRsc as ImageRsc
 import qualified Scene.Scene as Scene
 import Scene.Scene
-import Scene.SceneBehavior (setupScene)
+import Scene.SceneAct (setupScene)
 
 
 
@@ -82,14 +82,14 @@ controlFpsInApp process = do
 
 applyIntents :: (MonadIO  m) => Environment -> [InputIntent] -> m Environment
 applyIntents a [] = return a
-applyIntents a (intent:intents) = do
+applyIntents a (intent:list) = do
   let a' = applyIntent a intent
-  applyIntents a' intents
+  applyIntents a' list
 
 
 applyIntent :: Environment -> InputIntent -> Environment
-applyIntent env InputIntent.Quit = env { exiting = True }
-applyIntent env _ = env
+applyIntent environ InputIntent.Quit = environ { exiting = True }
+applyIntent environ _ = environ
 
 
 refreshApp :: (MonadIO m) => Scene -> m Scene
@@ -100,7 +100,7 @@ refreshApp s = do
   SDL.clear r
   
   env' <- applyIntents (env s) $ intents (input $ env s)
-  s' <- SceneBehavior.refreshScene s {env = env'}
+  s' <- SceneAct.refreshScene s {env = env'}
 
   SDL.present r
 

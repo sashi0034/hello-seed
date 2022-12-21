@@ -1,4 +1,4 @@
-module Scene.InfoUIBehavior( infoUIAct ) where
+module Scene.InfoUIAct( infoUIAct ) where
 import Control.Monad.Cont
 import qualified SDL
 import Scene.InfoUI

@@ -1,5 +1,5 @@
 
-module Scene.PlayerBehavior
+module Scene.PlayerAct
 ( playerAct
 ) where
 
@@ -32,7 +32,7 @@ updatePlayer s =
   let p = player s
       meteors = MeteorManager.meteorList $ meteorManager s
 
-      currPos = pos p
+      currPos = playerPos p
       mousePos' =  toVecF $ mousePos $ mouse $ input $ env s
 
       newState = updatePlayerState meteors p $ playerState p
@@ -40,7 +40,7 @@ updatePlayer s =
       p' = if isHitStopping s || not (isAlivePlayer newState)
         then p{playerState = newState}
         else p
-              { pos = calcNewPos currPos mousePos'
+              { playerPos = calcNewPos currPos mousePos'
               , animCount = 1 + animCount p
               , playerState = newState
              }
@@ -67,7 +67,7 @@ isHitWithMeteorList p = foldr (\met hit -> hit || isHitWithMeteor p met) False
 isHitWithMeteor :: Player -> Meteor -> Bool
 isHitWithMeteor p met =
   hitRectRect
-    (ColRect (pos p ~- thisSize ~* 0.5) thisSize)
+    (ColRect (playerPos p ~- thisSize ~* 0.5) thisSize)
     (ColRect (MeteorManager.currPos met ~- metSize ~* 0.5) metSize)
   where
     thisSize = toVecF playerSize
@@ -97,7 +97,7 @@ renderPlayer s =
 
     srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (animCount p)
     src = Vec srcX 0
-    dest = toVecInt $ pos p
+    dest = toVecInt $ playerPos p
 
   in case playerState p of
     Dead _ -> return ()

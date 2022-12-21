@@ -1,5 +1,5 @@
 
-module Scene.BackgroundBehavior
+module Scene.BackgroundAct
 ( backgroundAct
 ) where
 

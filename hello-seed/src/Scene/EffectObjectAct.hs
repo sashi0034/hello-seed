@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 
-module Scene.EffectObjectBehavior 
+module Scene.EffectObjectAct 
 (effectObjectsAct
 ) where
 import Scene.EffectObject (EffectObject (OvalElem, BlobElem))
@@ -68,7 +68,7 @@ checkBirthBlobElem s = case sceneState s of
       [BlobElem 0 start (v i ~* speed) | i <- [-6 .. 6]]
       where 
         interval = 10
-        start = Player.pos p
+        start = Player.playerPos p
         v = \i -> let rad = pi*i*30/180 in Vec (cos rad) (sin rad)
         speed = 5
     _ -> []

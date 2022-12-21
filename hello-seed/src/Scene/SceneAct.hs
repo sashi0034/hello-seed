@@ -1,21 +1,21 @@
 
 
-module Scene.SceneBehavior
+module Scene.SceneAct
   ( setupScene
   , refreshScene
   ) where
 
 import Control.Monad.IO.Class
 import Scene.Scene
-import Scene.PlayerBehavior
-import Scene.BackgroundBehavior
-import Scene.MeteorManagerBehavior
-import Scene.InfoUIBehavior
-import Scene.HarvestManagerBehavior
+import Scene.PlayerAct
+import Scene.BackgroundAct
+import Scene.MeteorManagerAct
+import Scene.InfoUIAct
+import Scene.HarvestManagerAct
 import InputState
 import qualified SDL
 import qualified Scene.HarvestManager as HarvestManager
-import Scene.EffectObjectBehavior
+import Scene.EffectObjectAct
 import Scene.Player
 import Data.Foldable (foldrM)
 import Control.Monad

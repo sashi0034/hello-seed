@@ -4,7 +4,7 @@ import Types (FrameCount, LeftFrame)
 
 
 data Player = Player
-  { pos :: VecF
+  { playerPos :: VecF
   , animCount :: Int
   , playerState :: PlayerState
   }
@@ -15,7 +15,7 @@ data PlayerState = Alive | HitStopping LeftFrame | Dead FrameCount
 
 initialPlayer :: VecInt -> Player
 initialPlayer screenSize = Player
-  { pos = toVecF $ screenSize `divVec` 2
+  { playerPos = toVecF $ screenSize `divVec` 2
   , animCount = 0
   , playerState = Alive
   }

@@ -21,19 +21,19 @@ executable hello-seed
                      , CollisionUtil
                      , Types
                      , Scene.Scene
-                     , Scene.SceneBehavior
+                     , Scene.SceneAct
                      , Scene.Player
-                     , Scene.PlayerBehavior
+                     , Scene.PlayerAct
                      , Scene.Background
-                     , Scene.BackgroundBehavior
+                     , Scene.BackgroundAct
                      , Scene.MeteorManager
-                     , Scene.MeteorManagerBehavior
+                     , Scene.MeteorManagerAct
                      , Scene.InfoUI
-                     , Scene.InfoUIBehavior
+                     , Scene.InfoUIAct
                      , Scene.HarvestManager
-                     , Scene.HarvestManagerBehavior
+                     , Scene.HarvestManagerAct
                      , Scene.EffectObject
-                     , Scene.EffectObjectBehavior
+                     , Scene.EffectObjectAct
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:       base
                      , sdl2

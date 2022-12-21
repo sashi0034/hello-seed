@@ -1,5 +1,5 @@
 
-module Scene.MeteorManagerBehavior where
+module Scene.MeteorManagerAct where
 import Scene.MeteorManager
 import Scene.Scene
 import Control.Monad.IO.Class ( MonadIO(..) )
@@ -27,7 +27,7 @@ updateMeteorManager s = do
       newFrameCount = 1 + managerFrameCount mm
 
   if isHitStopping s then return s else do
-
+  
     greaterMeteorList <- checkPopNewMeteor s newFrameCount (meteorList mm)
 
     let updatedMeteorList =
@@ -44,7 +44,7 @@ updateMeteorManager s = do
 
 
 updateMeteor :: Scene -> Meteor -> Meteor
-updateMeteor scene meteor = meteor
+updateMeteor _ meteor = meteor
   { currPos = newPos
   , animCount = newAnimCount
   }
