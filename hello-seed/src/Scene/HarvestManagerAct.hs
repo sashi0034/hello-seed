@@ -9,12 +9,13 @@ import AnimUtil
 import CollisionUtil (hitRectRect, ColRect (ColRect))
 import qualified Scene.Player as Player
 import Scene.Player (isAlivePlayer, Player (playerState))
+import Control.Lens
 
 
 harvestManagerAct :: ActorAct
 harvestManagerAct = ActorAct 
   (ActorUpdate updateHarvestManager)
-  (ActorActive $ activeInSceneWhen Playing)
+  (ActorActive $ isSceneState Playing)
   (ActorRenderIO renderHarvestManager)
 
 
@@ -56,7 +57,7 @@ updateHarvestByState s h Ripened =
         (ColRect (Player.playerPos p ~- playerSize ~* 0.5) playerSize)
         (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
       (nextState, cropped) = if isReaped && isAlivePlayer (playerState p)
-        then (Charging 0, sceneFrame s) -- 収穫成功
+        then (Charging 0, sceneMeta s ^. sceneFrame) -- 収穫成功
         else (Ripened, whenCropped h) -- そのまま
   in h{ currState=nextState, whenCropped = cropped }
 

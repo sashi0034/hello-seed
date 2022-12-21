@@ -6,7 +6,6 @@ module Scene.PlayerAct
 
 import Scene.Scene
 import Vec
-import qualified SDL
 import Control.Monad.IO.Class
 import ImageRsc ( ImageRsc(blobwob_24x24) )
 import InputState
@@ -21,9 +20,10 @@ import Scene.MeteorManager (Meteor)
 
 
 
+playerAct :: ActorAct
 playerAct = ActorAct 
   (ActorUpdate updatePlayer)
-  (ActorActive $ activeInSceneWhen Playing)
+  (ActorActive $ isSceneState Playing)
   (ActorRenderIO renderPlayer)
 
 
@@ -57,7 +57,6 @@ updatePlayerState _ _ (HitStopping count) = if count > 0
   then HitStopping $ count - 1
   else Dead 0
 updatePlayerState _ _ (Dead count) = Dead $ 1 + count
-updatePlayerState _ _ state = state
 
 
 isHitWithMeteorList :: Player -> [Meteor] -> Bool

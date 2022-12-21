@@ -39,7 +39,7 @@ renderBackground s = do
   let bgW = textureWidth bgTextureInfo
       bgH = textureHeight bgTextureInfo
 
-  let applySrcPt value = fromIntegral $ floor $ maxAmp + value
+  let applySrcPt value = floor $ maxAmp + value
 
   let srcX1 = applySrcPt currAmp
       srcY1 = applySrcPt currAmp

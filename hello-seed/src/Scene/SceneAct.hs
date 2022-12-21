@@ -17,72 +17,82 @@ import qualified SDL
 import qualified Scene.HarvestManager as HarvestManager
 import Scene.EffectObjectAct
 import Scene.Player
-import Data.Foldable (foldrM)
+import Data.Foldable (foldlM)
 import Control.Monad
+import Control.Lens
 
 
 setupScene :: Scene -> Scene
 setupScene s =
   let acts =
-        [ backgroundAct
+        [ sceneMetaAct
+        , backgroundAct
         , harvestManagerAct
         , effectObjectsAct
         , playerAct
         , meteorManagerAct
         , infoUIAct
-        , sceneMetaAct
         ]
   in s{ actorActList = acts }
 
 
 refreshScene :: (MonadIO m) => Scene -> m Scene
 refreshScene s = do
-  let nextFrame = 1 + sceneFrame s
-      s1 = s { sceneFrame = nextFrame }
-      s2 = checkShiftScene s1 $ sceneState s1
-      acts = filter (`applyActActive` s2) $ actorActList s2
+  let acts = filter (`applyActActive` s) $ actorActList s
 
-  s' <- liftIO $ foldrM applyActUpdate s2 acts
+  s' <- liftIO $ foldlM (flip applyActUpdate) s acts
 
   liftIO $ forM_ acts (`applyActRender` s')
 
   return s'
 
 
-checkShiftScene :: Scene -> SceneState -> Scene
-checkShiftScene s Title =
-  let butt = mouseButton $ mouse $ input $ env s
-      isClicked = butt SDL.ButtonLeft
-  in if isClicked
-    then initPlaying $ s {sceneState = Playing}
-    else s
-
-
-checkShiftScene s Playing =
-  let isContinued = countAfterDiedPlayer (playerState $ player s) < baseFps * 3
-  in if isContinued
-    then s
-    else s {sceneState = Title}
+checkShiftScene :: Scene -> Scene
+checkShiftScene s = let meta = sceneMeta s in
+  case meta^.sceneState of
+    Title ->
+      let butt = mouseButton $ mouse $ input $ env s
+          isClicked = butt SDL.ButtonLeft
+      in if isClicked
+        then initPlaying $ s {sceneMeta = meta & sceneState .~ Playing}
+        else s
+    Playing ->
+      let isContinued = countAfterDiedPlayer (playerState $ player s) < baseFps * 3
+      in if isContinued
+        then s
+        else s {sceneMeta = meta & sceneState .~ Title}
 
 
 calcScore :: Scene -> Int
 calcScore s =
   let hl = HarvestManager.harvestList $ harvestManager s
-      curr = currScore $ playingRecord s
+      curr = sceneMeta s ^. (playingRecord . currScore)
   in foldr (\h n -> if justCropped s h then n+1 else n) curr hl
 
 
 updatePlayingRecord :: Scene -> PlayingRecord
 updatePlayingRecord s =
-  let pr = playingRecord s
+  let pr = sceneMeta s ^. playingRecord
       newScore = calcScore s
   in pr
-      { currScore = calcScore s
-      , highScore = max newScore $ highScore pr}
+      & currScore .~ calcScore s
+      & highScore .~ max newScore (pr^.highScore)
 
 
 sceneMetaAct :: ActorAct
 sceneMetaAct = ActorAct
-  (ActorUpdate $ \s -> s {playingRecord = updatePlayingRecord s} )
-  (ActorActive $ activeInSceneWhen Playing)
+  (ActorUpdate updateSceneMeta )
+  (ActorActive $ const True)
   ActorRenderNone
+
+
+updateSceneMeta :: Scene -> Scene
+updateSceneMeta s =
+  let meta = sceneMeta s
+      nextFrame = meta^.sceneFrame + 1
+      meta' = meta
+        & sceneFrame .~ nextFrame
+        & playingRecord .~ updatePlayingRecord s
+      s1 = s { sceneMeta = meta' }
+      s' = checkShiftScene s1
+  in s'

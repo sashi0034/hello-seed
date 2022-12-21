@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 
-module Scene.EffectObjectAct 
+module Scene.EffectObjectAct
 (effectObjectsAct
 ) where
 import Scene.EffectObject (EffectObject (OvalElem, BlobElem))
@@ -11,18 +11,20 @@ import Rendering
 import Scene.Scene
 import Scene.HarvestManager
 import Scene.Player as Player
+import Control.Lens
 
 
 
 
+effectObjectsAct :: ActorAct
 effectObjectsAct = ActorAct
   (ActorUpdate updateEffectObjects)
   (ActorActive $ const True)
   (ActorRenderIO renderEffectObjects)
-  
-  
+
+
 updateEffectObjects :: Scene -> Scene
-updateEffectObjects s = 
+updateEffectObjects s =
   let effects = effectObjects s
       updatedList =
             filter isAliveEffect $
@@ -33,7 +35,7 @@ updateEffectObjects s =
 
 
 renderEffectObjects :: Scene -> IO ()
-renderEffectObjects s = 
+renderEffectObjects s =
   let effects = effectObjects s in do
   forM_ effects $ renderEffect $ ImageRenderer (imageRsc $ env s) (renderer $ env s)
 
@@ -52,9 +54,9 @@ checkBirthOvalElem :: Scene -> Harvest -> [EffectObject]
 checkBirthOvalElem s harv = if justCropped s harv
   then
     [(\(x, y) -> OvalElem
-        0 
-        (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4)) 
-        (Vec 0 $ - 4) 
+        0
+        (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4))
+        (Vec 0 $ - 4)
         $ 2 * abs (2 + y))
       (x0, y0) | x0 <- [-2 .. 2], y0 <- [-2 .. 2]]
   else []
@@ -62,18 +64,18 @@ checkBirthOvalElem s harv = if justCropped s harv
     pos = installedPos harv
 
 checkBirthBlobElem :: Scene -> [EffectObject]
-checkBirthBlobElem s = case sceneState s of
+checkBirthBlobElem s = case sceneMeta s ^. sceneState of
   Playing -> let p = player s in case playerState p of
-    (Player.Dead count) | count `mod` interval==0 -> 
+    (Player.Dead count) | count `mod` interval==0 ->
       [BlobElem 0 start (v i ~* speed) | i <- [-6 .. 6]]
-      where 
+      where
         interval = 10
         start = Player.playerPos p
         v = \i -> let rad = pi*i*30/180 in Vec (cos rad) (sin rad)
         speed = 5
     _ -> []
   _ -> []
-  
+
 
 
 generateEffect :: EffectObject -> [EffectObject]
@@ -96,7 +98,7 @@ updateEffect _ (OvalElem count pos vel delay) = if delay <= 0
     newVel = vel ~+ accel
     accel = Vec 0 0.1
 
-updateEffect _ (BlobElem count pos vec) = 
+updateEffect _ (BlobElem count pos vec) =
   BlobElem (count+1) (pos~+vec) vec
 
 

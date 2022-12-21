@@ -17,7 +17,7 @@ import AnimUtil (calcAnimFrameIndex)
 meteorManagerAct :: ActorAct
 meteorManagerAct = ActorAct
   (ActorUpdateIO updateMeteorManager)
-  (ActorActive $ activeInSceneWhen Playing)
+  (ActorActive $ isSceneState Playing)
   (ActorRenderIO renderMeteorManager)
 
 

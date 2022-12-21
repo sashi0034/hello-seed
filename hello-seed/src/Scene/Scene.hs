@@ -1,13 +1,12 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Scene.Scene where
 import Vec
 import Scene.Player
 import Scene.Background
 import Scene.MeteorManager (MeteorManager, initialMeteorManager)
 import Scene.InfoUI
-import Control.Monad.IO.Class (MonadIO)
-import Control.Monad
 import Control.Monad.Cont
 import Scene.HarvestManager (HarvestManager, initialHarvestManager, Harvest (whenCropped))
 import Scene.EffectObject (EffectObject)
@@ -16,15 +15,18 @@ import qualified SDL
 import ImageRsc
 import FontRsc
 import InputState
+import Control.Lens
 
 
 data SceneState = Title | Playing deriving (Eq)
 
 data PlayingRecord = PlayingRecord
-  { currScore :: Int
-  , highScore :: Int
-  , currLevel :: Int
-  }
+  { _currScore :: Int
+  , _highScore :: Int
+  , _currLevel :: Int
+  } deriving Show
+
+makeLenses ''PlayingRecord
 
 
 baseFps :: Int
@@ -43,6 +45,29 @@ data Environment = Environment
   }
 
 
+data SceneMetaData = SceneMetaData
+  { _sceneState :: SceneState
+  , _sceneFrame :: FrameCount
+  , _playingRecord :: PlayingRecord
+  }
+
+
+makeLenses ''SceneMetaData
+
+data Scene = Scene
+  { env :: Environment
+  , actorActList :: [] ActorAct
+  , sceneMeta :: SceneMetaData
+  , player :: Player
+  , background :: Background
+  , meteorManager :: MeteorManager
+  , infoUI :: InfoUI
+  , screenSize :: VecInt
+  , harvestManager :: HarvestManager
+  , effectObjects :: [] EffectObject
+  }
+
+
 initialEnv :: SDL.Window -> SDL.Renderer -> ImageRsc -> FontRsc -> VecInt -> Environment
 initialEnv window' renderer' imageRsc' fontRsc' windowSize' = Environment
   { exiting = False
@@ -53,6 +78,13 @@ initialEnv window' renderer' imageRsc' fontRsc' windowSize' = Environment
   , fontRsc = fontRsc'
   , windowSize = windowSize'
   , input = noInput
+  }
+
+
+initialSceneMetaData = SceneMetaData
+  { _sceneState = Title
+  , _sceneFrame = 0
+  , _playingRecord = PlayingRecord{ _currScore=0, _highScore=0, _currLevel=1 }
   }
 
 
@@ -92,33 +124,15 @@ applyActRender (ActorAct _ _ render) s = case render of
     (ActorRenderIO func) -> func s
 
 
-data Scene = Scene
-  { env :: Environment
-  , actorActList :: [] ActorAct
-  -- TODO: scene~をMetaにする
-  , sceneState :: SceneState
-  , sceneFrame :: FrameCount
-  , playingRecord :: PlayingRecord
-  , player :: Player
-  , background :: Background
-  , meteorManager :: MeteorManager
-  , infoUI :: InfoUI
-  , screenSize :: VecInt
-  , harvestManager :: HarvestManager
-  , effectObjects :: [] EffectObject
-  }
 
-
-withScene :: MonadIO m => Environment -> VecInt -> (forall (m :: * -> *). (MonadIO m) => Scene -> m ()) -> m()
+withScene :: MonadIO m => Environment -> VecInt -> (forall (m1 :: * -> *). (MonadIO m1) => Scene -> m1 ()) -> m()
 withScene env' screenSize' op =  (`runContT` return) $ do
   infoUI' <- ContT initialInfoUI
 
   let scene = Scene
         { env = env'
+        , sceneMeta = initialSceneMetaData
         , actorActList = []
-        , sceneState = Title
-        , sceneFrame = 0
-        , playingRecord = PlayingRecord{ currScore=0, highScore=0, currLevel=1 }
         , player = initialPlayer screenSize'
         , background = initialBackground
         , meteorManager = initialMeteorManager
@@ -134,8 +148,10 @@ withScene env' screenSize' op =  (`runContT` return) $ do
 initPlaying :: Scene -> Scene
 initPlaying s =
   let size = screenSize s
+      pr = sceneMeta s^.playingRecord
+      pr' = pr& currScore.~0 & currLevel.~1
   in s
-  { playingRecord = (playingRecord s){currScore=0, currLevel=1}
+  { sceneMeta = (sceneMeta s) {_playingRecord = pr'}
   , player = initialPlayer size
   , background = initialBackground
   , meteorManager = initialMeteorManager
@@ -143,12 +159,12 @@ initPlaying s =
   }
 
 
-activeInSceneWhen :: SceneState -> Scene -> Bool
-activeInSceneWhen state s = state == sceneState s
+isSceneState :: SceneState -> Scene -> Bool
+isSceneState state s = state == sceneMeta s^.sceneState
 
 
 justCropped :: Scene -> Harvest -> Bool
-justCropped s harv = whenCropped harv == (-1 + sceneFrame s)
+justCropped s harv = whenCropped harv == (-1 + sceneMeta s^.sceneFrame)
 
 
 isHitStopping :: Scene -> Bool

@@ -10,20 +10,21 @@ import Scene.Scene
 import Data.IORef
 import Scene.Player
 import qualified SDL.Font
+import Control.Lens
 
 
 
 
-infoUIAct = ActorAct 
-  (ActorUpdate id) 
-  (ActorActive $ const True) 
+infoUIAct = ActorAct
+  (ActorUpdate id)
+  (ActorActive $ const True)
   (ActorRenderIO renderInfoUI)
 
 
 renderInfoUI :: (MonadIO m) => Scene -> m ()
 renderInfoUI s = do
-  let ui = infoUI s 
-  
+  let ui = infoUI s
+
   let leftTop = Vec 64 32
       rightTop = Vec (getX (screenSize s) - 64) 32
       space = 32
@@ -35,14 +36,14 @@ renderInfoUI s = do
 
   when
     -- Game Over
-    (sceneState s == Playing && countAfterDiedPlayer (playerState $ player s) > 0)
+    (isSceneState Playing s && countAfterDiedPlayer (playerState $ player s) > 0)
     $ renderText s "Game Over" (textGameOver ui)
         (screenSize s `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 255 120 80 255
 
   when
     -- Title
-    (sceneState s == Title)
+    (isSceneState Title s)
     $ do
       renderText s "Full Up Blobwov" (textTitle ui)
         (screenSize s `divVec` 2)
@@ -53,10 +54,10 @@ renderInfoUI s = do
 
 
   where
-    pr = playingRecord s
-    score = "Curr Score :  " ++ show (currScore pr)
-    high  = "High Score :  " ++ show (highScore pr)
-    lv = "Level :  " ++ show (currLevel pr)
+    pr = sceneMeta s ^. playingRecord
+    score = "Curr Score :  " ++ show (pr ^. currLevel)
+    high  = "High Score :  " ++ show (pr ^. currLevel)
+    lv = "Level :  " ++ show (pr ^. currLevel)
 
 
 data TextAlign = LeftTop | RightTop | MiddleCenter
