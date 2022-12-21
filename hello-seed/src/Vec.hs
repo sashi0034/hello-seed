@@ -53,9 +53,21 @@ normalize (Vec x y) = Vec (x / size) (y / size)
     size = sqrt $ sqrMagnitude $ Vec x y
 
 
+radOfVecF :: VecF -> Float
+radOfVecF (Vec x y) = atan2 y x
+
+
+degOfVecF :: VecF -> Float
+degOfVecF v = 180 * radOfVecF v / pi
+
+
 vecZero :: (Num a) => Vec a
 vecZero = Vec 0 0
 
 
 vecUnit :: (Num a) => Vec a
 vecUnit = Vec 1 1
+
+
+convertVecInt :: (Num t1) => (t1 -> t1 -> t2) -> VecInt -> t2
+convertVecInt f v = f (fromIntegral $ getX v) (fromIntegral $ getY v)
