@@ -1,7 +1,8 @@
 
 
 module Scene.SceneBehavior
-  (refreshScene
+  ( setupScene
+  , refreshScene
   ) where
 
 import Control.Monad.IO.Class
@@ -9,23 +10,43 @@ import Scene.Scene
 import Scene.PlayerBehavior
 import Scene.BackgroundBehavior
 import Scene.MeteorManagerBehavior
-import Scene.InfoUIBehavior (refreshInfoUI)
+import Scene.InfoUIBehavior
 import Scene.HarvestManagerBehavior
 import InputState
 import qualified SDL
 import qualified Scene.HarvestManager as HarvestManager
-import Scene.EffectObjectBehavior (refreshEffectObjects)
+import Scene.EffectObjectBehavior
 import Scene.Player
+import Data.Foldable (foldrM)
+import Control.Monad
+
+
+setupScene :: Scene -> Scene
+setupScene s =
+  let acts =
+        [ backgroundAct
+        , harvestManagerAct
+        , effectObjectsAct
+        , playerAct
+        , meteorManagerAct
+        , infoUIAct
+        , sceneMetaAct
+        ]
+  in s{ actorActList = acts }
 
 
 refreshScene :: (MonadIO m) => Scene -> m Scene
 refreshScene s = do
   let nextFrame = 1 + sceneFrame s
-  let s1 = s { sceneFrame = nextFrame }
-  let s' = checkShiftScene s1 $ sceneState s1
-  refreshByState s' $ sceneState s'
+      s1 = s { sceneFrame = nextFrame }
+      s2 = checkShiftScene s1 $ sceneState s1
+      acts = filter (`applyActActive` s2) $ actorActList s2
 
+  s' <- liftIO $ foldrM applyActUpdate s2 acts
 
+  liftIO $ forM_ acts (`applyActRender` s')
+
+  return s'
 
 
 checkShiftScene :: Scene -> SceneState -> Scene
@@ -51,42 +72,6 @@ calcScore s =
   in foldr (\h n -> if justCropped s h then n+1 else n) curr hl
 
 
-
-
-refreshByState :: (MonadIO m) => Scene -> SceneState -> m Scene
-
-refreshByState s Title = do
-
-  background' <- refreshBackground s
-  infoUI' <- refreshInfoUI s
-  effectObjects' <- refreshEffectObjects s
-
-  return s
-    { background = background'
-    , infoUI = infoUI'
-    , effectObjects = effectObjects'
-    }
-
-refreshByState s Playing = do
-
-  background' <- refreshBackground s
-  harvestManager' <- refreshHarvestManager s
-  effectObjects' <- refreshEffectObjects s
-  player' <- refreshPlayer s
-  meteorManager' <- refreshMeteorManager s
-  infoUI' <- refreshInfoUI s
-
-  return s
-    { player = player'
-    , background = background'
-    , meteorManager = meteorManager'
-    , harvestManager = harvestManager'
-    , infoUI = infoUI'
-    , effectObjects = effectObjects'
-    , playingRecord = updatePlayingRecord s
-    }
-
-
 updatePlayingRecord :: Scene -> PlayingRecord
 updatePlayingRecord s =
   let pr = playingRecord s
@@ -95,3 +80,9 @@ updatePlayingRecord s =
       { currScore = calcScore s
       , highScore = max newScore $ highScore pr}
 
+
+sceneMetaAct :: ActorAct
+sceneMetaAct = ActorAct
+  (ActorUpdate $ \s -> s {playingRecord = updatePlayingRecord s} )
+  (ActorActive $ activeInSceneWhen Playing)
+  ActorRenderNone

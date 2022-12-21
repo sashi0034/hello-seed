@@ -1,6 +1,6 @@
 
 module Scene.BackgroundBehavior
-( refreshBackground
+( backgroundAct
 ) where
 
 import Control.Monad.IO.Class
@@ -14,39 +14,41 @@ import SDL.Video
 
 
 
-refreshBackground :: MonadIO m => Scene -> m Background
-refreshBackground s = do
-  renderBackground (renderer $ env s) (imageRsc $ env s) s
-  updateBackground s
+
+backgroundAct = ActorAct
+  (ActorUpdate updateBackground)
+  (ActorActive (const True))
+  (ActorRenderIO renderBackground)
 
 
-updateBackground :: MonadIO m => Scene -> m Background
-updateBackground scene = do
-  return background' { animCount = animCount background' + 1 }
+updateBackground :: Scene -> Scene
+updateBackground s = s { background = bg'}
   where
-    background' = background scene
+    bg = background s
+    bg' = bg { animCount = 1 + animCount bg }
 
 
+renderBackground :: (MonadIO m) => Scene -> m ()
+renderBackground s = do
+  let r = renderer $ env s
+      image = imageRsc $ env s
+      bgTexture = blue_bg image
 
-renderBackground :: (MonadIO m) => SDL.Renderer -> ImageRsc -> Scene -> m ()
-renderBackground r imageRsc s = do
-  --liftIO $ print $ animCount $ background $ scene world
-
-  let bgTexture = blue_bg imageRsc
   bgTextureInfo <- queryTexture bgTexture
-  
+
   let bgW = textureWidth bgTextureInfo
-  let bgH = textureHeight bgTextureInfo
+      bgH = textureHeight bgTextureInfo
 
   let applySrcPt value = fromIntegral $ floor $ maxAmp + value
+
   let srcX1 = applySrcPt currAmp
-  let srcY1 = applySrcPt currAmp
-  let srcX2 = applySrcPt $ -currAmp + fromIntegral bgW
-  let srcY2 = applySrcPt $ -currAmp + fromIntegral bgH
+      srcY1 = applySrcPt currAmp
+      srcX2 = applySrcPt $ -currAmp + fromIntegral bgW
+      srcY2 = applySrcPt $ -currAmp + fromIntegral bgH
 
   let src = SDLWrapper.makeRect srcX1 srcY1 srcX2 srcY2
 
-  SDL.copy r (blue_bg imageRsc) (Just src) (Just dest)
+  SDL.copy r (blue_bg image) (Just src) (Just dest)
 
   where
     dest = SDLWrapper.makeRect 0 0 (fromIntegral $ getX size) (fromIntegral $ getY size)

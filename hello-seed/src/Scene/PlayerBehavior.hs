@@ -1,6 +1,6 @@
 
 module Scene.PlayerBehavior
-( refreshPlayer
+( playerAct
 ) where
 
 
@@ -19,28 +19,34 @@ import qualified Scene.MeteorManager as MeteorManager
 import Scene.MeteorManager (Meteor)
 
 
-refreshPlayer :: (MonadIO m) => Scene -> m Player
-refreshPlayer s = do
-  renderPlayer (renderer $ env s) (imageRsc $ env s) $ player s
-  return $ updatePlayer s
 
 
-updatePlayer :: Scene -> Player
-updatePlayer s =
-  let newState = updatePlayerState meteors player' $ playerState player'
-  in if isHitStopping s || not (isAlivePlayer newState)
-    then player'{playerState = newState}
-    else player'
-          { pos = calcNewPos currPos mousePos'
-          , animCount = 1 + animCount player'
-          , playerState = newState
-          }
-  where
-    player' = player s
-    meteors = MeteorManager.meteorList $ meteorManager s
+playerAct = ActorAct 
+  (ActorUpdate updatePlayer)
+  (ActorActive $ activeInSceneWhen Playing)
+  (ActorRenderIO renderPlayer)
 
-    currPos = pos player'
-    mousePos' =  toVecF $ mousePos $ mouse $ input $ env s
+
+updatePlayer :: Scene -> Scene
+updatePlayer s = 
+  let p = player s
+      meteors = MeteorManager.meteorList $ meteorManager s
+
+      currPos = pos p
+      mousePos' =  toVecF $ mousePos $ mouse $ input $ env s
+
+      newState = updatePlayerState meteors p $ playerState p
+
+      p' = if isHitStopping s || not (isAlivePlayer newState)
+        then p{playerState = newState}
+        else p
+              { pos = calcNewPos currPos mousePos'
+              , animCount = 1 + animCount p
+              , playerState = newState
+             }
+
+  in s { player = p' }
+
 
 
 updatePlayerState :: [Meteor] -> Player -> PlayerState -> PlayerState
@@ -78,18 +84,23 @@ calcNewPos currPos inputPos
     minMovable = 12
 
 
-renderPlayer :: (MonadIO m) => SDL.Renderer -> ImageRsc -> Player -> m ()
-renderPlayer r rsc player' = 
-  case playerState player' of
-    Dead _ -> return ()
-    _ -> Rendering.renderPixelartCentral r (blobwob_24x24 rsc) dest $ SrcRect src cellSize
+renderPlayer :: (MonadIO m) => Scene -> m ()
+renderPlayer s = 
+  let 
+    r = renderer $ env s
+    rsc = imageRsc $ env s
+    p = player s
 
-  where
     frameDuration = 10
     numFrame = 10
     cellSize = playerSize
 
-    srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (animCount player')
+    srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (animCount p)
     src = Vec srcX 0
-    dest = toVecInt $ pos player'
+    dest = toVecInt $ pos p
+
+  in case playerState p of
+    Dead _ -> return ()
+    _ -> Rendering.renderPixelartCentral r (blobwob_24x24 rsc) dest $ SrcRect src cellSize
+
 

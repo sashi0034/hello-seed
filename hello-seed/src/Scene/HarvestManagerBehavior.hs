@@ -1,4 +1,4 @@
-module Scene.HarvestManagerBehavior where
+module Scene.HarvestManagerBehavior (harvestManagerAct) where
 import Scene.HarvestManager
 import Control.Monad.Cont
 import Scene.Scene
@@ -11,16 +11,24 @@ import qualified Scene.Player as Player
 import Scene.Player (isAlivePlayer, Player (playerState))
 
 
-refreshHarvestManager :: (MonadIO m) => Scene -> m HarvestManager
-refreshHarvestManager s = do
-  forM_ (harvestList this) (renderHarvest s)
+harvestManagerAct = ActorAct 
+  (ActorUpdate updateHarvestManager)
+  (ActorActive $ activeInSceneWhen Playing)
+  (ActorRenderIO renderHarvestManager)
 
-  return $ this{
-    harvestList= map (updateHarvest s) (harvestList this)
-    }
 
+renderHarvestManager :: Scene -> IO ()
+renderHarvestManager s = do
+  forM_ (harvestList hm) (renderHarvest s)
   where
-    this = harvestManager s
+    hm = harvestManager s
+
+
+updateHarvestManager :: Scene -> Scene
+updateHarvestManager s = 
+  let hm = harvestManager s
+      hm' = hm {harvestList= map (updateHarvest s) (harvestList hm)}
+  in s {harvestManager = hm'}
 
 
 updateHarvest :: Scene -> Harvest -> Harvest

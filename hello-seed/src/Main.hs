@@ -22,6 +22,7 @@ import SDL.Font ()
 import qualified FontRsc as ImageRsc
 import qualified Scene.Scene as Scene
 import Scene.Scene
+import Scene.SceneBehavior (setupScene)
 
 
 
@@ -39,7 +40,7 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ d
         initialWindowSize
       $ \s -> do
 
-    runApp loopApp s
+    runApp loopApp (setupScene s)
 
 
 runApp :: (Monad m) => (Scene -> m Scene) -> Scene -> m ()

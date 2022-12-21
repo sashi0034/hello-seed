@@ -1,4 +1,4 @@
-module Scene.InfoUIBehavior(refreshInfoUI) where
+module Scene.InfoUIBehavior( infoUIAct ) where
 import Control.Monad.Cont
 import qualified SDL
 import Scene.InfoUI
@@ -12,18 +12,22 @@ import Scene.Player
 import qualified SDL.Font
 
 
-refreshInfoUI :: (MonadIO m) => Scene -> m InfoUI
-refreshInfoUI s = do
-  renderInfoUI s $ infoUI $ s
-  return $ infoUI $ s
 
 
-renderInfoUI :: (MonadIO m) => Scene -> InfoUI -> m ()
-renderInfoUI s ui = do
+infoUIAct = ActorAct 
+  (ActorUpdate id) 
+  (ActorActive $ const True) 
+  (ActorRenderIO renderInfoUI)
 
+
+renderInfoUI :: (MonadIO m) => Scene -> m ()
+renderInfoUI s = do
+  let ui = infoUI s 
+  
   let leftTop = Vec 64 32
-  let rightTop = Vec (getX (screenSize s) - 64) 32
-  let space = 32
+      rightTop = Vec (getX (screenSize s) - 64) 32
+      space = 32
+
   renderText s score (textScore ui) leftTop LeftTop DefaultStyle
   renderText s high (textHighScore ui) (leftTop ~+ Vec 0 space) LeftTop DefaultStyle
 
@@ -32,19 +36,19 @@ renderInfoUI s ui = do
   when
     -- Game Over
     (sceneState s == Playing && countAfterDiedPlayer (playerState $ player s) > 0)
-    $ renderText s "Game Over" (textGameOver ui) 
-        (screenSize s `divVec` 2) 
+    $ renderText s "Game Over" (textGameOver ui)
+        (screenSize s `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 255 120 80 255
 
   when
     -- Title
     (sceneState s == Title)
-    $ do 
-      renderText s "Full Up Blobwov" (textTitle ui) 
-        (screenSize s `divVec` 2) 
+    $ do
+      renderText s "Full Up Blobwov" (textTitle ui)
+        (screenSize s `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 200 255 80 255
-      renderText s "Press Left Click To Start" (textTitlePas ui) 
-        (screenSize s `divVec` 2 ~+ Vec 0 128) 
+      renderText s "Press Left Click To Start" (textTitlePas ui)
+        (screenSize s `divVec` 2 ~+ Vec 0 128)
         MiddleCenter DefaultStyle
 
 
@@ -64,11 +68,11 @@ data Style = DefaultStyle | Header SDL.Font.Color
 renderText :: MonadIO m => Scene -> String -> TextTexCache -> VecInt -> TextAlign -> Style -> m ()
 renderText s str (TextTexCache tex buff) start align style = do
   beforeBuff <- liftIO $ readIORef buff
-  
-  when 
+
+  when
     -- キャッシュを取ってテキストに変化があるときだけ描画する
-    (beforeBuff /= str) 
-    $ do 
+    (beforeBuff /= str)
+    $ do
       liftIO $ writeIORef buff str
       case style of
         DefaultStyle -> updateTextBlendedOutlined

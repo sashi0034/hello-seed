@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 
-module Scene.EffectObjectBehavior where
+module Scene.EffectObjectBehavior 
+(effectObjectsAct
+) where
 import Scene.EffectObject (EffectObject (OvalElem, BlobElem))
 import Control.Monad.Cont
 import ImageRsc (ImageRenderer (ImageRenderer), ImageRsc (oval_16x16, crying_laughing_16x16))
@@ -11,19 +13,29 @@ import Scene.HarvestManager
 import Scene.Player as Player
 
 
-refreshEffectObjects :: (MonadIO m) => Scene -> m [EffectObject]
-refreshEffectObjects s = do
+
+
+effectObjectsAct = ActorAct
+  (ActorUpdate updateEffectObjects)
+  (ActorActive $ const True)
+  (ActorRenderIO renderEffectObjects)
+  
+  
+updateEffectObjects :: Scene -> Scene
+updateEffectObjects s = 
+  let effects = effectObjects s
+      updatedList =
+            filter isAliveEffect $
+            map (updateEffect s)
+            effects
+      birthedNewList = checkBirthNewEffect s
+  in s {effectObjects = updatedList ++ birthedNewList}
+
+
+renderEffectObjects :: Scene -> IO ()
+renderEffectObjects s = 
+  let effects = effectObjects s in do
   forM_ effects $ renderEffect $ ImageRenderer (imageRsc $ env s) (renderer $ env s)
-  --liftIO $ print $ length effects
-  let updatedList =
-        filter isAliveEffect $
-        map (updateEffect s)
-        effects
-  return $ checkBirthNewEffect s ++ updatedList
-  where
-    effects = effectObjects s
-
-
 
 
 checkBirthNewEffect :: Scene -> [EffectObject]

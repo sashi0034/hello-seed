@@ -56,8 +56,46 @@ initialEnv window' renderer' imageRsc' fontRsc' windowSize' = Environment
   }
 
 
+data ActorUpdate =
+    ActorUpdate (Scene -> Scene)
+  | ActorUpdateIO (Scene -> IO Scene)
+
+
+data ActorActive = ActorActive (Scene -> Bool)
+
+
+data ActorRender =
+    ActorRenderNone
+  | ActorRenderIO (Scene -> IO ())
+
+
+data ActorAct = ActorAct
+  ActorUpdate
+  ActorActive
+  ActorRender
+
+
+applyActUpdate :: ActorAct -> Scene -> IO Scene
+applyActUpdate (ActorAct update _ _) s = case update of
+    (ActorUpdate func) -> return $ func s
+    (ActorUpdateIO func) -> func s
+
+
+applyActActive :: ActorAct -> Scene -> Bool
+applyActActive (ActorAct _ active _) s = case active of
+    (ActorActive func) -> func s
+
+
+applyActRender :: ActorAct -> Scene -> IO ()
+applyActRender (ActorAct _ _ render) s = case render of
+    ActorRenderNone -> return ()
+    (ActorRenderIO func) -> func s
+
+
 data Scene = Scene
   { env :: Environment
+  , actorActList :: [] ActorAct
+  -- TODO: scene~をMetaにする
   , sceneState :: SceneState
   , sceneFrame :: FrameCount
   , playingRecord :: PlayingRecord
@@ -77,6 +115,7 @@ withScene env' screenSize' op =  (`runContT` return) $ do
 
   let scene = Scene
         { env = env'
+        , actorActList = []
         , sceneState = Title
         , sceneFrame = 0
         , playingRecord = PlayingRecord{ currScore=0, highScore=0, currLevel=1 }
@@ -104,12 +143,16 @@ initPlaying s =
   }
 
 
+activeInSceneWhen :: SceneState -> Scene -> Bool
+activeInSceneWhen state s = state == sceneState s
+
+
 justCropped :: Scene -> Harvest -> Bool
 justCropped s harv = whenCropped harv == (-1 + sceneFrame s)
 
 
 isHitStopping :: Scene -> Bool
-isHitStopping s = 
+isHitStopping s =
   let ps = playerState $ player s
   in case ps of
       HitStopping _ -> True
