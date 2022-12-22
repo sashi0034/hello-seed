@@ -57,7 +57,7 @@ updateHarvestByState s h Ripened =
         (ColRect (Player.playerPos p ~- playerSize ~* 0.5) playerSize)
         (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
       (nextState, cropped) = if isReaped && isAlivePlayer (playerState p)
-        then (Charging 0, s ^. (sceneMeta . sceneFrame)) -- 収穫成功
+        then (Charging 0, s ^. (metaInfo . sceneFrame)) -- 収穫成功
         else (Ripened, whenCropped h) -- そのまま
   in h{ currState=nextState, whenCropped = cropped }
 

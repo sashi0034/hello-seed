@@ -22,7 +22,7 @@ initialPlayer screenSize = Player
   { playerPos = toVecF $ screenSize `divVec` 2
   , playerAngDeg = 0
   , animCount = 0
-  , playerState = Pacman
+  , playerState = Normal
   }
 
 

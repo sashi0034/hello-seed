@@ -1,12 +1,14 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Scene.PlayerAct
-( playerAct
+( updatePlayer
+, renderPlayer
 ) where
 
 
 import Scene.Scene
 import Vec
-import Control.Monad.IO.Class
 import ImageRsc ( ImageRsc(blobwob_24x24) )
 import InputState
 import Scene.Player
@@ -15,7 +17,7 @@ import Rendering (SrcRect(SrcRect))
 import AnimUtil (calcAnimFrameIndex)
 import CollisionUtil (hitRectRect, ColRect (ColRect))
 import qualified Scene.MeteorManager as MeteorManager
-import Scene.MeteorManager (Meteor)
+import Scene.MeteorManager (Meteor, MeteorManager)
 import qualified SDL.Primitive
 import Linear
 import Control.Lens
@@ -23,14 +25,10 @@ import Control.Lens
 
 
 
-playerAct :: ActorAct
-playerAct = ActorAct
-  (ActorUpdate updatePlayer)
-  (ActorActive $ isSceneState Playing)
-  (ActorRenderIO renderPlayer)
-
-
-updatePlayer :: Scene -> Scene
+updatePlayer ::
+  ( HasPlayer s Player
+  , HasMeteorManager s MeteorManager
+  , HasEnv s Environment) => s -> Player
 updatePlayer s =
   let p = s^.player
       meteors = MeteorManager.meteorList $ s^.meteorManager
@@ -50,7 +48,7 @@ updatePlayer s =
               , playerAngDeg = angDeg
              }
 
-  in s & player .~ p'
+  in p'
 
 
 
@@ -113,7 +111,9 @@ calcNewPosAndAngle currPos inputPos oldAngDeg
           oldAngDeg * (1-rate) + angDeg * rate
 
 
-renderPlayer :: (MonadIO m) => Scene -> m ()
+renderPlayer :: 
+  ( HasPlayer s Player
+  , HasEnv s Environment) => s -> IO ()
 renderPlayer s =
   let
     r = renderer $ s^.env

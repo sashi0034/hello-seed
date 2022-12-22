@@ -64,7 +64,7 @@ checkBirthOvalElem s harv = if justCropped s harv
     pos = installedPos harv
 
 checkBirthBlobElem :: Scene -> [EffectObject]
-checkBirthBlobElem s = case s^.sceneMeta ^. sceneState of
+checkBirthBlobElem s = case s^.metaInfo ^. sceneState of
   Playing -> let p = s^.player in case playerState p of
     (Player.Dead count) | count `mod` interval==0 ->
       [BlobElem 0 start (v i ~* speed) | i <- [-6 .. 6]]

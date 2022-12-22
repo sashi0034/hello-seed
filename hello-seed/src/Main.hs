@@ -45,7 +45,7 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ d
 
 
 runApp :: (Monad m) => (Scene -> m Scene) -> Scene -> m ()
-runApp f = repeatUntil f (exiting . _env)
+runApp f = repeatUntil f (exiting . _sceneEnv)
 
 
 repeatUntil :: (Monad m) => (a -> m a) -> (a -> Bool) -> a -> m ()
@@ -57,7 +57,7 @@ loopApp :: (MonadIO m) => Scene -> m Scene
 loopApp s = do
   controlFpsInApp $ do
     input' <- InputState.readInput
-    refreshApp s { _env = (s^.env){ input = input' } }
+    refreshApp s { _sceneEnv = (s^.env){ input = input' } }
 
 
 controlFpsInApp :: MonadIO m => m Scene -> m Scene
@@ -101,7 +101,7 @@ refreshApp s = do
   SDL.clear r
   
   env' <- applyIntents (s^.env) $ intents (input $ s^.env)
-  s' <- SceneAct.refreshScene s {_env = env'}
+  s' <- SceneAct.refreshScene s {_sceneEnv = env'}
 
   SDL.present r
 

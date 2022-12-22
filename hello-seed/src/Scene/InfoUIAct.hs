@@ -55,7 +55,7 @@ renderInfoUI s = do
 
 
   where
-    pr = s ^. sceneMeta ^. playingRecord
+    pr = s ^. metaInfo ^. playingRecord
     score = "Curr Score :  " ++ show (pr ^. currLevel)
     high  = "High Score :  " ++ show (pr ^. currLevel)
     lv = "Level :  " ++ show (pr ^. currLevel)
