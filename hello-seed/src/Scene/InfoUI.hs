@@ -1,4 +1,4 @@
-module MainScene.InfoUI where
+module Scene.InfoUI where
 import Data.IORef (IORef, newIORef)
 import Rendering (RenderedText)
 import SDLWrapper (withNewSurTexRef)

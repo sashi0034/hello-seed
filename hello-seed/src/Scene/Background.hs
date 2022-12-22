@@ -1,4 +1,4 @@
-module MainScene.Background where
+module Scene.Background where
 
 data Background = Background
   { animCount :: Int}

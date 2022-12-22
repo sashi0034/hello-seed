@@ -8,20 +8,21 @@ module Main (main) where
 import qualified SDL
 import qualified SDLWrapper
 import InputIntent
-import World
 
 import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.StateVar
 import ImageRsc
 import InputState ( readInput, InputState(intents) )
-import qualified MainScene.MainSceneBehavior as MainSceneBehavior
+import qualified Scene.SceneAct as SceneAct
 import Vec (Vec(Vec), getY, getX)
 import Data.Time
 import Control.Concurrent (threadDelay)
 import SDL.Font ()
 import qualified FontRsc as ImageRsc
-import qualified MainScene.MainScene as MainScene
+import qualified Scene.Scene as Scene
+import Scene.Scene
+import Scene.SceneAct (setupScene)
 
 
 
@@ -34,14 +35,16 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ d
     SDLWrapper.withRenderer w $ \r ->
     ImageRsc.loadImageRsc r $ \imageRsc' ->
     ImageRsc.loadFontRsc $ \fontRsc' ->
-    MainScene.withMainScene initialWindowSize $ \scene' -> do
+    Scene.withScene
+        (Scene.initialEnv w r imageRsc' fontRsc' initialWindowSize)
+        initialWindowSize
+      $ \s -> do
 
-    let world = World.initialWorld w r imageRsc' fontRsc' initialWindowSize scene'
-    runApp loopApp world
+    runApp loopApp (setupScene s)
 
 
-runApp :: (Monad m) => (World -> m World) -> World -> m ()
-runApp f = repeatUntil f exiting
+runApp :: (Monad m) => (Scene -> m Scene) -> Scene -> m ()
+runApp f = repeatUntil f (exiting . env)
 
 
 repeatUntil :: (Monad m) => (a -> m a) -> (a -> Bool) -> a -> m ()
@@ -49,20 +52,23 @@ repeatUntil f p = go
   where go a = f a >>= \b -> unless (p b) (go b)
 
 
-loopApp :: (MonadIO m) => World -> m World
-loopApp world = do
-  controlFpsInApp world $ do
+loopApp :: (MonadIO m) => Scene -> m Scene
+loopApp s = do
+  controlFpsInApp $ do
     input' <- InputState.readInput
-    refreshApp world {input = input'}
+    refreshApp s { env = (env s){ input = input' } }
 
 
-controlFpsInApp :: MonadIO m => World -> (m World) -> m World
-controlFpsInApp world process = do
+controlFpsInApp :: MonadIO m => m Scene -> m Scene
+controlFpsInApp process = do
   loopStartTime <- liftIO getCurrentTime
 
-  world' <- process
+  s' <- process
 
   loopEndTime <- liftIO getCurrentTime
+  
+  let idealFps = fromIntegral $ currentBaseFps $ env s'
+  let idealDuration = 1000 * 1000 * ((1 :: Float) / idealFps)
 
   let deltaTime = diffUTCTime loopEndTime loopStartTime
   let realDuration = 1000 * 1000 * fromRational (toRational deltaTime)
@@ -70,39 +76,36 @@ controlFpsInApp world process = do
 
   liftIO $ threadDelay $ floor sleepDuration
 
-  return world'
-
-  where
-    idealFps = fromIntegral $ currentBaseFps world
-    idealDuration = 1000 * 1000 * ((1 :: Float) / idealFps)
+  return s'
 
 
-applyIntents :: (MonadIO  m) => World -> [InputIntent] -> m World
+
+applyIntents :: (MonadIO  m) => Environment -> [InputIntent] -> m Environment
 applyIntents a [] = return a
-applyIntents a (intent:intents) = do
+applyIntents a (intent:list) = do
   let a' = applyIntent a intent
-  applyIntents a' intents
+  applyIntents a' list
 
 
-applyIntent :: World -> InputIntent -> World
-applyIntent world InputIntent.Quit = world { exiting = True }
-applyIntent world _ = world
+applyIntent :: Environment -> InputIntent -> Environment
+applyIntent environ InputIntent.Quit = environ { exiting = True }
+applyIntent environ _ = environ
 
 
-refreshApp :: (MonadIO m) => World -> m World
-refreshApp world = do
+refreshApp :: (MonadIO m) => Scene -> m Scene
+refreshApp s = do
   let renderColor = SDL.rendererDrawColor r
   renderColor $= SDL.V4 100 100 100 255
 
   SDL.clear r
-
-  world' <- applyIntents world $ intents (input world)
-  scene' <- MainSceneBehavior.refreshMainScene world'
+  
+  env' <- applyIntents (env s) $ intents (input $ env s)
+  s' <- SceneAct.refreshScene s {env = env'}
 
   SDL.present r
 
-  return world'{scene=scene'}
+  return s'
 
   where
-    r = renderer world
+    r = renderer $ env s
 

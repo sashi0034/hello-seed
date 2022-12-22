@@ -1,37 +1,46 @@
-module MainScene.HarvestManagerBehavior where
-import MainScene.HarvestManager
+module Scene.HarvestManagerAct (harvestManagerAct) where
+import Scene.HarvestManager
 import Control.Monad.Cont
-import World
-import MainScene.MainScene
+import Scene.Scene
 import Vec
 import Rendering
 import ImageRsc (ImageRsc(corn_24x24))
 import AnimUtil
 import CollisionUtil (hitRectRect, ColRect (ColRect))
-import qualified MainScene.Player as Player
-import MainScene.Player (isAlivePlayer, Player (playerState))
+import qualified Scene.Player as Player
+import Scene.Player (isAlivePlayer, Player (playerState))
+import Control.Lens
 
 
-refreshHarvestManager :: (MonadIO m) => World -> m HarvestManager
-refreshHarvestManager w = do
-  forM_ (harvestList this) (renderHarvest w)
+harvestManagerAct :: ActorAct
+harvestManagerAct = ActorAct 
+  (ActorUpdate updateHarvestManager)
+  (ActorActive $ isSceneState Playing)
+  (ActorRenderIO renderHarvestManager)
 
-  return $ this{
-    harvestList= map (updateHarvest w) (harvestList this)
-    }
 
+renderHarvestManager :: Scene -> IO ()
+renderHarvestManager s = do
+  forM_ (harvestList hm) (renderHarvest s)
   where
-    this = harvestManager $ scene w
+    hm = harvestManager s
 
 
-updateHarvest :: World -> Harvest -> Harvest
+updateHarvestManager :: Scene -> Scene
+updateHarvestManager s = 
+  let hm = harvestManager s
+      hm' = hm {harvestList= map (updateHarvest s) (harvestList hm)}
+  in s {harvestManager = hm'}
+
+
+updateHarvest :: Scene -> Harvest -> Harvest
 updateHarvest w h =
   let h' = h 
         { animCount= 1 + animCount h }
   in updateHarvestByState w h' $ currState h'
 
 
-updateHarvestByState :: World -> Harvest -> HarvestState -> Harvest
+updateHarvestByState :: Scene -> Harvest -> HarvestState -> Harvest
 
 updateHarvestByState _ h (Charging count) =
   let nextState = if count < maxChargingCount
@@ -40,25 +49,25 @@ updateHarvestByState _ h (Charging count) =
         else Ripened
   in h{ currState=nextState }
 
-updateHarvestByState w h Ripened = 
-  let p = player $ scene w
+updateHarvestByState s h Ripened = 
+  let p = player $ s
       playerSize = toVecF Player.playerSize
       thisSize = toVecF harvestCellSize
       isReaped = hitRectRect 
-        (ColRect (Player.pos p ~- playerSize ~* 0.5) playerSize)
+        (ColRect (Player.playerPos p ~- playerSize ~* 0.5) playerSize)
         (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
       (nextState, cropped) = if isReaped && isAlivePlayer (playerState p)
-        then (Charging 0, sceneFrame $ scene w) -- 収穫成功
+        then (Charging 0, sceneMeta s ^. sceneFrame) -- 収穫成功
         else (Ripened, whenCropped h) -- そのまま
   in h{ currState=nextState, whenCropped = cropped }
 
 
-renderHarvest :: (MonadIO m) => World -> Harvest -> m()
-renderHarvest w h =
+renderHarvest :: (MonadIO m) => Scene -> Harvest -> m()
+renderHarvest s h =
   let
     pos = installedPos h
-    r = Rendering.renderPixelartCentral (renderer w) (corn_24x24 $ imageRsc w)
-    r' = Rendering.renderPixelart (renderer w) (corn_24x24 $ imageRsc w)
+    r = Rendering.renderPixelartCentral (renderer $ env s) (corn_24x24 $ imageRsc $ env s)
+    r' = Rendering.renderPixelart (renderer $ env s) (corn_24x24 $ imageRsc $ env s)
     state = currState h
   in case state of
 

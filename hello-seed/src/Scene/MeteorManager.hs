@@ -1,5 +1,5 @@
 
-module MainScene.MeteorManager where
+module Scene.MeteorManager where
 import Vec (VecF, Vec (Vec))
 
 data Meteor = Meteor
