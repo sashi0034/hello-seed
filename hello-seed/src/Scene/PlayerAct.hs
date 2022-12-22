@@ -102,7 +102,14 @@ calcNewPosAndAngle currPos inputPos oldAngDeg
     minMovable = 12
 
     angEasingRate = 0.1
-    easedAng rate = oldAngDeg * (1-rate) + angDeg * rate
+    easedAng rate
+      -- 正負に関わらずきれいに度数をイージングする
+      | oldAngDeg < 0 && angDeg > 0 && abs(oldAngDeg + 360 - angDeg) < abs(oldAngDeg - angDeg) =
+          (oldAngDeg + 360) * (1-rate) + angDeg * rate
+      | oldAngDeg > 0 && angDeg < 0 && abs(oldAngDeg - 360 - angDeg) < abs(oldAngDeg - angDeg) =
+          (oldAngDeg - 360) * (1-rate) + angDeg * rate
+      | otherwise =
+          oldAngDeg * (1-rate) + angDeg * rate
 
 
 renderPlayer :: (MonadIO m) => Scene -> m ()
@@ -133,13 +140,19 @@ renderPlayer s =
           arcStart = floor $ ang + halfArc
           arcEnd =  floor $ ang - halfArc
           yellow = V4 255 220 40 255
+          orange = V4 255 196 24 255
           black = V4 80 64 48 255
+          white = V4 255 244 220 255
           radius = 64
-          borderWidth = 2
-      -- フチ
-      SDL.Primitive.fillPie r (convertVecInt V2 dest) (radius + borderWidth) (arcStart - borderWidth) (arcEnd + borderWidth) black
+          borderWidth = 4
+      -- 白フチ
+      SDL.Primitive.fillPie r (convertVecInt V2 dest) (radius + borderWidth * 2) (arcStart - borderWidth) (arcEnd + borderWidth) white
+      -- 黒フチ
+      SDL.Primitive.fillPie r (convertVecInt V2 dest) (radius + borderWidth) (arcStart) (arcEnd) black
+      -- 中身フチ
+      SDL.Primitive.fillPie r (convertVecInt V2 dest) radius (arcStart + borderWidth) (arcEnd - borderWidth) orange
       -- 中身
-      SDL.Primitive.fillPie r (convertVecInt V2 dest) radius arcStart arcEnd yellow
+      SDL.Primitive.fillPie r (convertVecInt V2 dest) (radius - borderWidth) (arcStart + borderWidth) (arcEnd - borderWidth) yellow
 
     -- 普通のblobwob
     _ -> Rendering.renderPixelartCentral r (blobwob_24x24 rsc) dest $ SrcRect src cellSize

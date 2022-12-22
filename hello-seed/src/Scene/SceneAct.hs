@@ -29,8 +29,8 @@ setupScene s =
         , backgroundAct
         , harvestManagerAct
         , effectObjectsAct
-        , playerAct
         , meteorManagerAct
+        , playerAct
         , infoUIAct
         ]
   in s{ actorActList = acts }
