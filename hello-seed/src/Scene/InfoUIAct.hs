@@ -15,6 +15,7 @@ import Control.Lens
 
 
 
+infoUIAct :: ActorAct
 infoUIAct = ActorAct
   (ActorUpdate id)
   (ActorActive $ const True)

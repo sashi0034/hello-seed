@@ -104,6 +104,7 @@ initialEnv window' renderer' imageRsc' fontRsc' windowSize' = Environment
   }
 
 
+initialSceneMetaData :: SceneMetaData
 initialSceneMetaData = SceneMetaData
   { _sceneState = Title
   , _sceneFrame = 0
@@ -130,7 +131,7 @@ applyActRender (ActorAct _ _ render) s = case render of
 
 
 withScene :: MonadIO m => Environment -> VecInt -> (forall (m1 :: * -> *). (MonadIO m1) => Scene -> m1 ()) -> m()
-withScene env' screenSize' op =  (`runContT` return) $ do
+withScene env' screenSize' ope =  (`runContT` return) $ do
   infoUI' <- ContT initialInfoUI
 
   let scene = Scene
@@ -146,13 +147,13 @@ withScene env' screenSize' op =  (`runContT` return) $ do
         , _effectObjects = []
         }
 
-  op scene
+  ope scene
 
 
 initPlaying :: Scene -> Scene
 initPlaying s =
   let size = s^.screenSize
-      pr = s^.sceneMeta^.playingRecord
+      pr = s ^. (sceneMeta . playingRecord)
       pr' = pr& currScore.~0 & currLevel.~1
   in s
   { _sceneMeta = (s^.sceneMeta) {_playingRecord = pr'}
