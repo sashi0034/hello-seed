@@ -23,6 +23,7 @@ import qualified FontRsc as ImageRsc
 import qualified Scene.Scene as Scene
 import Scene.Scene
 import Scene.SceneAct (setupScene)
+import Control.Lens
 
 
 
@@ -44,7 +45,7 @@ main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ d
 
 
 runApp :: (Monad m) => (Scene -> m Scene) -> Scene -> m ()
-runApp f = repeatUntil f (exiting . env)
+runApp f = repeatUntil f (exiting . _sceneEnv)
 
 
 repeatUntil :: (Monad m) => (a -> m a) -> (a -> Bool) -> a -> m ()
@@ -56,7 +57,7 @@ loopApp :: (MonadIO m) => Scene -> m Scene
 loopApp s = do
   controlFpsInApp $ do
     input' <- InputState.readInput
-    refreshApp s { env = (env s){ input = input' } }
+    refreshApp s { _sceneEnv = (s^.env){ input = input' } }
 
 
 controlFpsInApp :: MonadIO m => m Scene -> m Scene
@@ -67,7 +68,7 @@ controlFpsInApp process = do
 
   loopEndTime <- liftIO getCurrentTime
   
-  let idealFps = fromIntegral $ currentBaseFps $ env s'
+  let idealFps = fromIntegral $ currentBaseFps $ s' ^. env
   let idealDuration = 1000 * 1000 * ((1 :: Float) / idealFps)
 
   let deltaTime = diffUTCTime loopEndTime loopStartTime
@@ -99,13 +100,13 @@ refreshApp s = do
 
   SDL.clear r
   
-  env' <- applyIntents (env s) $ intents (input $ env s)
-  s' <- SceneAct.refreshScene s {env = env'}
+  env' <- applyIntents (s^.env) $ intents (input $ s^.env)
+  s' <- SceneAct.refreshScene s {_sceneEnv = env'}
 
   SDL.present r
 
   return s'
 
   where
-    r = renderer $ env s
+    r = renderer $ s^.env
 

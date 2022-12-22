@@ -15,6 +15,7 @@ import Control.Lens
 
 
 
+infoUIAct :: ActorAct
 infoUIAct = ActorAct
   (ActorUpdate id)
   (ActorActive $ const True)
@@ -23,10 +24,10 @@ infoUIAct = ActorAct
 
 renderInfoUI :: (MonadIO m) => Scene -> m ()
 renderInfoUI s = do
-  let ui = infoUI s
+  let ui = s ^. infoUI 
 
   let leftTop = Vec 64 32
-      rightTop = Vec (getX (screenSize s) - 64) 32
+      rightTop = Vec (getX (s^.screenSize) - 64) 32
       space = 32
 
   renderText s score (textScore ui) leftTop LeftTop DefaultStyle
@@ -36,9 +37,9 @@ renderInfoUI s = do
 
   when
     -- Game Over
-    (isSceneState Playing s && countAfterDiedPlayer (playerState $ player s) > 0)
+    (isSceneState Playing s && countAfterDiedPlayer (playerState $ s^.player) > 0)
     $ renderText s "Game Over" (textGameOver ui)
-        (screenSize s `divVec` 2)
+        ((s^.screenSize) `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 255 120 80 255
 
   when
@@ -46,15 +47,15 @@ renderInfoUI s = do
     (isSceneState Title s)
     $ do
       renderText s "Full Up Blobwov" (textTitle ui)
-        (screenSize s `divVec` 2)
+        ((s^.screenSize) `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 200 255 80 255
       renderText s "Press Left Click To Start" (textTitlePas ui)
-        (screenSize s `divVec` 2 ~+ Vec 0 128)
+        ((s^.screenSize) `divVec` 2 ~+ Vec 0 128)
         MiddleCenter DefaultStyle
 
 
   where
-    pr = sceneMeta s ^. playingRecord
+    pr = s ^. metaInfo ^. playingRecord
     score = "Curr Score :  " ++ show (pr ^. currLevel)
     high  = "High Score :  " ++ show (pr ^. currLevel)
     lv = "Level :  " ++ show (pr ^. currLevel)
@@ -77,11 +78,11 @@ renderText s str (TextTexCache tex buff) start align style = do
       liftIO $ writeIORef buff str
       case style of
         DefaultStyle -> updateTextBlendedOutlined
-          (renderer $ env s) (outlinedMplus24 (fontRsc $ env s))
+          (renderer $ s^.env) (outlinedMplus24 (fontRsc $ s^.env))
           (SDL.V4 160 255 120 255) (SDL.V4 120 100 120 255)
           (pack str) tex
         Header color -> updateTextBlendedOutlined
-          (renderer $ env s) (outlinedMplus96 (fontRsc $ env s))
+          (renderer $ s^.env) (outlinedMplus96 (fontRsc $ s^.env))
           color (SDL.V4 80 80 80 255)
           (pack str) tex
 
@@ -94,4 +95,4 @@ renderText s str (TextTexCache tex buff) start align style = do
           texSize <- getSizeOfRenderedText tex
           return $ start ~- (texSize `divVec` 2)
 
-  renderPreRenderedText (renderer $ env s) tex start'
+  renderPreRenderedText (renderer $ s^.env) tex start'
