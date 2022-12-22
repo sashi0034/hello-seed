@@ -11,10 +11,12 @@ import Vec
 import Scene.Scene
 import Scene.Background
 import SDL.Video
+import Control.Lens
 
 
 
 
+backgroundAct :: ActorAct
 backgroundAct = ActorAct
   (ActorUpdate updateBackground)
   (ActorActive (const True))
@@ -22,16 +24,16 @@ backgroundAct = ActorAct
 
 
 updateBackground :: Scene -> Scene
-updateBackground s = s { background = bg'}
+updateBackground s = s & background .~ bg'
   where
-    bg = background s
+    bg = s^.background
     bg' = bg { animCount = 1 + animCount bg }
 
 
 renderBackground :: (MonadIO m) => Scene -> m ()
 renderBackground s = do
-  let r = renderer $ env s
-      image = imageRsc $ env s
+  let r = renderer $ s^.env
+      image = imageRsc $ s^.env
       bgTexture = blue_bg image
 
   bgTextureInfo <- queryTexture bgTexture
@@ -52,9 +54,9 @@ renderBackground s = do
 
   where
     dest = SDLWrapper.makeRect 0 0 (fromIntegral $ getX size) (fromIntegral $ getY size)
-    size = screenSize s
+    size = s^.screenSize
 
-    currPhase = (fromIntegral (animCount $ background $ s) / 180) * pi :: Float
+    currPhase = (fromIntegral (animCount $ s ^. background) / 180) * pi :: Float
     maxAmp = 200 :: Float
     currAmp = maxAmp * sin currPhase
 

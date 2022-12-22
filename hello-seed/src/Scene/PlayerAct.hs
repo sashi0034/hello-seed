@@ -18,6 +18,7 @@ import qualified Scene.MeteorManager as MeteorManager
 import Scene.MeteorManager (Meteor)
 import qualified SDL.Primitive
 import Linear
+import Control.Lens
 
 
 
@@ -31,11 +32,11 @@ playerAct = ActorAct
 
 updatePlayer :: Scene -> Scene
 updatePlayer s =
-  let p = player s
-      meteors = MeteorManager.meteorList $ meteorManager s
+  let p = s^.player
+      meteors = MeteorManager.meteorList $ s^.meteorManager
 
       currPos = playerPos p
-      mousePos' = toVecF $ mousePos $ mouse $ input $ env s
+      mousePos' = toVecF $ mousePos $ mouse $ input $ s^.env
       (newPos, angDeg) = calcNewPosAndAngle currPos mousePos' $ playerAngDeg p
 
       newState = updatePlayerState meteors p
@@ -49,7 +50,7 @@ updatePlayer s =
               , playerAngDeg = angDeg
              }
 
-  in s { player = p' }
+  in s & player .~ p'
 
 
 
@@ -115,9 +116,9 @@ calcNewPosAndAngle currPos inputPos oldAngDeg
 renderPlayer :: (MonadIO m) => Scene -> m ()
 renderPlayer s =
   let
-    r = renderer $ env s
-    rsc = imageRsc $ env s
-    p = player s
+    r = renderer $ s^.env
+    rsc = imageRsc $ s^.env
+    p = s^.player
 
     frameDuration = 10
     numFrame = 10

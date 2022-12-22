@@ -11,6 +11,7 @@ import Rendering (SrcRect(SrcRect))
 import Control.Monad
 import System.Random
 import AnimUtil (calcAnimFrameIndex)
+import Control.Lens
 
 
 
@@ -23,7 +24,7 @@ meteorManagerAct = ActorAct
 
 updateMeteorManager :: MonadIO m => Scene -> m Scene
 updateMeteorManager s = do
-  let mm = meteorManager s
+  let mm = s^.meteorManager
       newFrameCount = 1 + managerFrameCount mm
 
   if isHitStopping s then return s else do
@@ -31,7 +32,7 @@ updateMeteorManager s = do
     greaterMeteorList <- checkPopNewMeteor s newFrameCount (meteorList mm)
 
     let updatedMeteorList =
-          filter (isInScreen $ screenSize s) $
+          filter (isInScreen $ s^.screenSize) $
           map (updateMeteor s) greaterMeteorList
 
         mm' = mm
@@ -40,7 +41,7 @@ updateMeteorManager s = do
 
     --liftIO $ print $ length updatedMeteorList
 
-    return s{meteorManager = mm'}
+    return $ s & meteorManager .~ mm'
 
 
 updateMeteor :: Scene -> Meteor -> Meteor
@@ -96,7 +97,7 @@ isOutScreen screenSize' meteor = not (isInScreen screenSize' meteor)
 
 
 checkPopNewMeteor :: MonadIO m => Scene -> Int -> [] Meteor -> m ([] Meteor)
-checkPopNewMeteor scene count meteors
+checkPopNewMeteor s count meteors
 
   | (count `mod` popDuration) == 0 = do
     startPosPattern <- liftIO (randomRIO (0, 3) :: IO Int)
@@ -117,7 +118,7 @@ checkPopNewMeteor scene count meteors
 
   where
     popDuration = 2
-    screenSize' = screenSize scene
+    screenSize' = s ^. screenSize
 
 
 renderMeteor :: MonadIO m => SDL.Renderer -> ImageRsc -> Meteor -> m ()
@@ -134,9 +135,9 @@ renderMeteor r rsc meteor = do
 
 renderMeteorManager :: MonadIO m => Scene -> m ()
 renderMeteorManager s = 
-  let r = renderer $ env s
-      rsc = imageRsc $ env s
-      mm = meteorManager s
+  let r = renderer $ s^.env
+      rsc = imageRsc $ s^.env
+      mm = s^.meteorManager
 
       render = renderMeteor r rsc
       meteors = meteorList mm

@@ -33,12 +33,12 @@ setupScene s =
         , playerAct
         , infoUIAct
         ]
-  in s{ actorActList = acts }
+  in s{ _actorActList = acts }
 
 
 refreshScene :: (MonadIO m) => Scene -> m Scene
 refreshScene s = do
-  let acts = filter (`applyActActive` s) $ actorActList s
+  let acts = filter (`applyActActive` s) $ s ^. actorActList
 
   s' <- liftIO $ foldlM (flip applyActUpdate) s acts
 
@@ -48,31 +48,31 @@ refreshScene s = do
 
 
 checkShiftScene :: Scene -> Scene
-checkShiftScene s = let meta = sceneMeta s in
+checkShiftScene s = let meta = s^.sceneMeta in
   case meta^.sceneState of
     Title ->
-      let butt = mouseButton $ mouse $ input $ env s
+      let butt = mouseButton $ mouse $ input $ s^.env
           isClicked = butt SDL.ButtonLeft
       in if isClicked
-        then initPlaying $ s {sceneMeta = meta & sceneState .~ Playing}
+        then initPlaying $ s & sceneMeta .~ (meta & sceneState .~ Playing)
         else s
     Playing ->
-      let isContinued = countAfterDiedPlayer (playerState $ player s) < baseFps * 3
+      let isContinued = countAfterDiedPlayer (playerState $ s^.player) < baseFps * 3
       in if isContinued
         then s
-        else s {sceneMeta = meta & sceneState .~ Title}
+        else s {_sceneMeta = meta & sceneState .~ Title}
 
 
 calcScore :: Scene -> Int
 calcScore s =
-  let hl = HarvestManager.harvestList $ harvestManager s
-      curr = sceneMeta s ^. (playingRecord . currScore)
+  let hl = HarvestManager.harvestList $ s ^. harvestManager
+      curr = s ^. (sceneMeta . (playingRecord . currScore))
   in foldr (\h n -> if justCropped s h then n+1 else n) curr hl
 
 
 updatePlayingRecord :: Scene -> PlayingRecord
 updatePlayingRecord s =
-  let pr = sceneMeta s ^. playingRecord
+  let pr = s ^. (sceneMeta . playingRecord)
       newScore = calcScore s
   in pr
       & currScore .~ calcScore s
@@ -88,11 +88,11 @@ sceneMetaAct = ActorAct
 
 updateSceneMeta :: Scene -> Scene
 updateSceneMeta s =
-  let meta = sceneMeta s
+  let meta = s^.sceneMeta
       nextFrame = meta^.sceneFrame + 1
       meta' = meta
         & sceneFrame .~ nextFrame
         & playingRecord .~ updatePlayingRecord s
-      s1 = s { sceneMeta = meta' }
+      s1 = s & sceneMeta .~ meta'
       s' = checkShiftScene s1
   in s'

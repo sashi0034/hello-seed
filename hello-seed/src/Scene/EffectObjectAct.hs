@@ -25,27 +25,27 @@ effectObjectsAct = ActorAct
 
 updateEffectObjects :: Scene -> Scene
 updateEffectObjects s =
-  let effects = effectObjects s
+  let effects = s^.effectObjects
       updatedList =
             filter isAliveEffect $
             map (updateEffect s)
             effects
       birthedNewList = checkBirthNewEffect s
-  in s {effectObjects = updatedList ++ birthedNewList}
+  in s & effectObjects .~ (updatedList ++ birthedNewList)
 
 
 renderEffectObjects :: Scene -> IO ()
 renderEffectObjects s =
-  let effects = effectObjects s in do
-  forM_ effects $ renderEffect $ ImageRenderer (imageRsc $ env s) (renderer $ env s)
+  let effects = s ^. effectObjects in do
+  forM_ effects $ renderEffect $ ImageRenderer (imageRsc $ s^.env) (renderer $ s^.env)
 
 
 checkBirthNewEffect :: Scene -> [EffectObject]
 checkBirthNewEffect s = (checkPlayer . checkEffs . checkHarvs) []
   where
-    currList = effectObjects s
+    currList = s ^. effectObjects
 
-    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalElem s harv) temp $ harvestList $ harvestManager s
+    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalElem s harv) temp $ harvestList $ s ^. harvestManager
     checkPlayer = \temp -> temp ++ checkBirthBlobElem s
     checkEffs = \temp -> foldr (\e effs -> effs ++ generateEffect e) temp currList
 
@@ -64,8 +64,8 @@ checkBirthOvalElem s harv = if justCropped s harv
     pos = installedPos harv
 
 checkBirthBlobElem :: Scene -> [EffectObject]
-checkBirthBlobElem s = case sceneMeta s ^. sceneState of
-  Playing -> let p = player s in case playerState p of
+checkBirthBlobElem s = case s^.sceneMeta ^. sceneState of
+  Playing -> let p = s^.player in case playerState p of
     (Player.Dead count) | count `mod` interval==0 ->
       [BlobElem 0 start (v i ~* speed) | i <- [-6 .. 6]]
       where
