@@ -54,7 +54,7 @@ renderBackground s = do
 
   where
     dest = SDLWrapper.makeRect 0 0 (fromIntegral $ getX size) (fromIntegral $ getY size)
-    size = s^.screenSize
+    size = s^. (metaInfo . screenSize)
 
     currPhase = (fromIntegral (animCount $ s ^. background) / 180) * pi :: Float
     maxAmp = 200 :: Float

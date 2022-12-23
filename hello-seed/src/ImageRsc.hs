@@ -21,6 +21,8 @@ data ImageRsc = ImageRsc
   , corn_24x24 :: SDL.Texture
   , oval_16x16 :: SDL.Texture
   , crying_laughing_16x16 :: SDL.Texture
+  , logo_hungry :: SDL.Texture
+  , logo_stuffed :: SDL.Texture
   }
 
 
@@ -44,6 +46,9 @@ loadImageRsc r op =
   -- Image by <a href="https://www.freepik.com/free-vector/abstract-classic-blue-screensaver_6674908.htm#page=2&query=simple%20background&position=9&from_view=keyword">Freepik</a>
   SDLWrapper.withTexture r "./assets/blue_bg_dark.jpg" $ \blue_bg' ->   
 
+  SDLWrapper.withTexture r "./assets/logo_hungry.png" $ \logo_hungry' ->   
+  SDLWrapper.withTexture r "./assets/logo_stuffed.png" $ \logo_stuffed' ->   
+
     void $ op (ImageRsc 
       { blobwob_24x24 = blobwob_24x24'
       , tree_16x16 = tree_16x16'
@@ -54,6 +59,8 @@ loadImageRsc r op =
       , corn_24x24 = corn_24x24'
       , oval_16x16 = oval_16x16'
       , crying_laughing_16x16 = crying_laughing_16x16'
+      , logo_hungry = logo_hungry'
+      , logo_stuffed = logo_stuffed'
       })
 
 

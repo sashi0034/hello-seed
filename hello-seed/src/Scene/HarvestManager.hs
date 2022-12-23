@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 module Scene.HarvestManager where
 import Vec
 import Rendering
@@ -8,11 +10,13 @@ type ChargingCount = Int
 data HarvestState = Charging ChargingCount | Ripened
 
 
+data CroppedHarvest = CroppedHarvest VecInt
+
+
 data Harvest = Harvest
   { animCount :: Int
   , installedPos :: VecInt
   , currState :: HarvestState
-  , whenCropped :: FrameCount
   }
 
 
@@ -21,12 +25,14 @@ maxChargingCount = 300
 
 
 data HarvestManager = HarvestManager
-  { harvestList :: [] Harvest }
+  { harvestList :: [] Harvest
+  , croppedStack :: [] CroppedHarvest }
 
 
 initialHarvestManager :: VecInt -> HarvestManager
 initialHarvestManager screenSize = HarvestManager
-  { harvestList = harvList }
+  { harvestList = harvList
+  , croppedStack = [] }
   where
     baseX = getX screenSize `div` 2
     baseY = getY screenSize `div` 2
@@ -34,7 +40,6 @@ initialHarvestManager screenSize = HarvestManager
       { animCount=0
       , installedPos=pos
       , currState = Charging 0
-      , whenCropped = -1
       }) posList
     spaceX = 24 * pixelartScale
     spaceY = 32 * pixelartScale
@@ -43,7 +48,7 @@ initialHarvestManager screenSize = HarvestManager
     posList = makePosList baseX baseY numHarvX numHarvY spaceX spaceY
 
 
-
+makePosList :: Integral a => a -> a -> a -> a -> a -> a -> [Vec a]
 makePosList baseX baseY numX numY spaceX spaceY =
   concatMap getRow yIndexes
   where

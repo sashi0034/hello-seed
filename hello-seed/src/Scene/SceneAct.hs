@@ -15,12 +15,12 @@ import Scene.InfoUIAct
 import Scene.HarvestManagerAct
 import InputState
 import qualified SDL
-import qualified Scene.HarvestManager as HarvestManager
 import Scene.EffectObjectAct
 import Scene.Player
 import Data.Foldable (foldlM)
 import Control.Monad
 import Control.Lens
+import Scene.CommunicatorAct
 
 
 
@@ -45,6 +45,7 @@ setupScene s =
         , meteorManagerAct
         , playerAct
         , infoUIAct
+        , communicatorAct
         ]
   in s{ _sceneActorActList = acts }
 
@@ -76,20 +77,11 @@ checkShiftScene s = let meta = s^.metaInfo in
         else s {_sceneMetaInfo = meta & sceneState .~ Title}
 
 
-calcScore :: Scene -> Int
-calcScore s =
-  let hl = HarvestManager.harvestList $ s ^. harvestManager
-      curr = s ^. (metaInfo . (playingRecord . currScore))
-  in foldr (\h n -> if justCropped s h then n+1 else n) curr hl
-
-
 updatePlayingRecord :: Scene -> PlayingRecord
 updatePlayingRecord s =
   let pr = s ^. (metaInfo . playingRecord)
-      newScore = calcScore s
   in pr
-      & currScore .~ calcScore s
-      & highScore .~ max newScore (pr^.highScore)
+      & highScore .~ max (pr ^. currScore) (pr^.highScore)
 
 
 sceneMetaAct :: ActorAct

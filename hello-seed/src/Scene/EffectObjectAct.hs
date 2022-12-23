@@ -41,27 +41,26 @@ renderEffectObjects s =
 
 
 checkBirthNewEffect :: Scene -> [EffectObject]
-checkBirthNewEffect s = (checkPlayer . checkEffs . checkHarvs) []
+checkBirthNewEffect s = (checkPlayer . checkEffs) []
   where
     currList = s ^. effectObjects
 
-    checkHarvs = \temp -> foldr (\harv effs -> effs ++ checkBirthOvalElem s harv) temp $ harvestList $ s ^. harvestManager
     checkPlayer = \temp -> temp ++ checkBirthBlobElem s
     checkEffs = \temp -> foldr (\e effs -> effs ++ generateEffect e) temp currList
 
 
-checkBirthOvalElem :: Scene -> Harvest -> [EffectObject]
-checkBirthOvalElem s harv = if justCropped s harv
-  then
-    [(\(x, y) -> OvalElem
-        0
-        (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4))
-        (Vec 0 $ - 4)
-        $ 2 * abs (2 + y))
-      (x0, y0) | x0 <- [-2 .. 2], y0 <- [-2 .. 2]]
-  else []
-  where
-    pos = installedPos harv
+-- checkBirthOvalElem :: Scene -> Harvest -> [EffectObject]
+-- checkBirthOvalElem s harv = if justCropped s harv
+--   then
+--     [(\(x, y) -> OvalElem
+--         0
+--         (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4))
+--         (Vec 0 $ - 4)
+--         $ 2 * abs (2 + y))
+--       (x0, y0) | x0 <- [-2 .. 2], y0 <- [-2 .. 2]]
+--   else []
+--   where
+--     pos = installedPos harv
 
 checkBirthBlobElem :: Scene -> [EffectObject]
 checkBirthBlobElem s = case s^.metaInfo ^. sceneState of

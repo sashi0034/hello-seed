@@ -1,9 +1,20 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Scene.Player where
 import Vec
 import Types (FrameCount, LeftFrame)
+import Control.Lens (makeLenses)
 
 
 type Degree = Float
+
+
+data Fullness = Fullness 
+  { _maxFull :: Int
+  , _currFull :: Int
+  }
+
+
+makeLenses ''Fullness
 
 
 data Player = Player
@@ -11,6 +22,7 @@ data Player = Player
   , playerAngDeg :: Degree
   , animCount :: Int
   , playerState :: PlayerState
+  , full :: Fullness
   }
 
 data PlayerState = Normal | Pacman | HitStopping LeftFrame | Dead FrameCount

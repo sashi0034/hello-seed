@@ -12,7 +12,7 @@ import Scene.Background
 import Scene.MeteorManager (MeteorManager, initialMeteorManager)
 import Scene.InfoUI
 import Control.Monad.Cont
-import Scene.HarvestManager (HarvestManager, initialHarvestManager, Harvest (whenCropped))
+import Scene.HarvestManager (HarvestManager, initialHarvestManager)
 import Scene.EffectObject (EffectObject)
 import Types (FrameCount)
 import qualified SDL
@@ -49,14 +49,15 @@ data Environment = Environment
   }
 
 
-data SceneMetaData = SceneMetaData
+data SceneMetaInfo = SceneMetaInfo
   { _sceneState :: SceneState
   , _sceneFrame :: FrameCount
   , _playingRecord :: PlayingRecord
+  , _screenSize :: VecInt
   }
 
 
-makeLenses ''SceneMetaData
+makeLenses ''SceneMetaInfo
 
 
 data ActorUpdate =
@@ -81,18 +82,23 @@ data ActorAct = ActorAct
 data Scene = Scene
   { _sceneEnv :: Environment
   , _sceneActorActList :: [ActorAct]
-  , _sceneMetaInfo :: SceneMetaData
+  , _sceneMetaInfo :: SceneMetaInfo
   , _scenePlayer :: Player
   , _sceneBackground :: Background
   , _sceneMeteorManager :: MeteorManager
   , _sceneInfoUI :: InfoUI
-  , _sceneScreenSize :: VecInt
   , _sceneHarvestManager :: HarvestManager
   , _sceneEffectObjects :: [EffectObject]
   }
 
 
 makeFields ''Scene
+-- 上記により、  
+--     class HasPlayer s a | s -> a where
+--       player :: Lens' s a
+--     instance HasX (Foo a) Int where
+--       player = _scenePlayerLens
+-- などが生成される
 
 
 initialEnv :: SDL.Window -> SDL.Renderer -> ImageRsc -> FontRsc -> VecInt -> Environment
@@ -108,11 +114,12 @@ initialEnv window' renderer' imageRsc' fontRsc' windowSize' = Environment
   }
 
 
-initialSceneMetaData :: SceneMetaData
-initialSceneMetaData = SceneMetaData
+initialSceneMetaInfo :: VecInt -> SceneMetaInfo
+initialSceneMetaInfo screen = SceneMetaInfo
   { _sceneState = Title
   , _sceneFrame = 0
   , _playingRecord = PlayingRecord{ _currScore=0, _highScore=0, _currLevel=1 }
+  , _screenSize = screen
   }
 
 
@@ -140,14 +147,13 @@ withScene env' screenSize' ope =  (`runContT` return) $ do
 
   let scene = Scene
         { _sceneEnv = env'
-        , _sceneMetaInfo = initialSceneMetaData
+        , _sceneMetaInfo = initialSceneMetaInfo screenSize'
         , _sceneActorActList = []
         , _scenePlayer = initialPlayer screenSize'
         , _sceneBackground = initialBackground
         , _sceneMeteorManager = initialMeteorManager
         , _sceneHarvestManager = initialHarvestManager screenSize'
         , _sceneInfoUI = infoUI'
-        , _sceneScreenSize = screenSize'
         , _sceneEffectObjects = []
         }
 
@@ -156,7 +162,7 @@ withScene env' screenSize' ope =  (`runContT` return) $ do
 
 initPlaying :: Scene -> Scene
 initPlaying s =
-  let size = s^.screenSize
+  let size = s ^. (metaInfo . screenSize)
       pr = s ^. (metaInfo . playingRecord)
       pr' = pr& currScore.~0 & currLevel.~1
   in s
@@ -172,8 +178,8 @@ isSceneState :: SceneState -> Scene -> Bool
 isSceneState state s = state == s ^. (metaInfo . sceneState)
 
 
-justCropped :: Scene -> Harvest -> Bool
-justCropped s harv = whenCropped harv == (-1 + s ^. (metaInfo . sceneFrame))
+-- justCropped :: Scene -> Harvest -> Bool
+-- justCropped s harv = whenCropped harv == (-1 + s ^. (metaInfo . sceneFrame))
 
 
 

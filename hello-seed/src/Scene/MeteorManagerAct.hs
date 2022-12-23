@@ -28,11 +28,11 @@ updateMeteorManager s = do
       newFrameCount = 1 + managerFrameCount mm
 
   if isHitStopping s then return s else do
-  
+
     greaterMeteorList <- checkPopNewMeteor s newFrameCount (meteorList mm)
 
     let updatedMeteorList =
-          filter (isInScreen $ s^.screenSize) $
+          filter (isInScreen $ s ^. (metaInfo . screenSize)) $
           map (updateMeteor s) greaterMeteorList
 
         mm' = mm
@@ -118,7 +118,7 @@ checkPopNewMeteor s count meteors
 
   where
     popDuration = 2
-    screenSize' = s ^. screenSize
+    screenSize' = s ^. (metaInfo . screenSize)
 
 
 renderMeteor :: MonadIO m => SDL.Renderer -> ImageRsc -> Meteor -> m ()
@@ -134,7 +134,7 @@ renderMeteor r rsc meteor = do
 
 
 renderMeteorManager :: MonadIO m => Scene -> m ()
-renderMeteorManager s = 
+renderMeteorManager s =
   let r = renderer $ s^.env
       rsc = imageRsc $ s^.env
       mm = s^.meteorManager

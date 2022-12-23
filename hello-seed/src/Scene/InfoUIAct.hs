@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Scene.InfoUIAct( infoUIAct ) where
 import Control.Monad.Cont
 import qualified SDL
@@ -11,6 +12,8 @@ import Data.IORef
 import Scene.Player
 import qualified SDL.Font
 import Control.Lens
+import ImageRsc (ImageRsc(logo_hungry, logo_stuffed))
+import qualified SDLWrapper
 
 
 
@@ -22,12 +25,12 @@ infoUIAct = ActorAct
   (ActorRenderIO renderInfoUI)
 
 
-renderInfoUI :: (MonadIO m) => Scene -> m ()
+renderInfoUI :: ( MonadIO m ) => Scene -> m ()
 renderInfoUI s = do
-  let ui = s ^. infoUI 
+  let ui = s ^. infoUI
 
   let leftTop = Vec 64 32
-      rightTop = Vec (getX (s^.screenSize) - 64) 32
+      rightTop = Vec (getX (s ^. (metaInfo . screenSize)) - 64) 32
       space = 32
 
   renderText s score (textScore ui) leftTop LeftTop DefaultStyle
@@ -39,23 +42,30 @@ renderInfoUI s = do
     -- Game Over
     (isSceneState Playing s && countAfterDiedPlayer (playerState $ s^.player) > 0)
     $ renderText s "Game Over" (textGameOver ui)
-        ((s^.screenSize) `divVec` 2)
+        ((s ^. (metaInfo . screenSize)) `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 255 120 80 255
+
+  when
+    -- Playing
+    (isSceneState Playing s)
+    -- Hungry / Stuffed
+    $ renderFullness s
+
 
   when
     -- Title
     (isSceneState Title s)
     $ do
       renderText s "Full Up Blobwov" (textTitle ui)
-        ((s^.screenSize) `divVec` 2)
+        ((s^.metaInfo^.screenSize) `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 200 255 80 255
       renderText s "Press Left Click To Start" (textTitlePas ui)
-        ((s^.screenSize) `divVec` 2 ~+ Vec 0 128)
+        ((s^.metaInfo^.screenSize) `divVec` 2 ~+ Vec 0 128)
         MiddleCenter DefaultStyle
 
 
   where
-    pr = s ^. metaInfo ^. playingRecord
+    pr = s ^. (metaInfo . playingRecord)
     score = "Curr Score :  " ++ show (pr ^. currLevel)
     high  = "High Score :  " ++ show (pr ^. currLevel)
     lv = "Level :  " ++ show (pr ^. currLevel)
@@ -66,7 +76,7 @@ data TextAlign = LeftTop | RightTop | MiddleCenter
 
 data Style = DefaultStyle | Header SDL.Font.Color
 
-
+-- テキスト描画
 renderText :: MonadIO m => Scene -> String -> TextTexCache -> VecInt -> TextAlign -> Style -> m ()
 renderText s str (TextTexCache tex buff) start align style = do
   beforeBuff <- liftIO $ readIORef buff
@@ -96,3 +106,19 @@ renderText s str (TextTexCache tex buff) start align style = do
           return $ start ~- (texSize `divVec` 2)
 
   renderPreRenderedText (renderer $ s^.env) tex start'
+
+
+renderFullness :: MonadIO m => Scene -> m()
+renderFullness s = do
+  let hungry = logo_hungry $ imageRsc $ s ^. env
+  let cx = fromIntegral $ getX $ (s ^. (metaInfo . screenSize)) `divVec` 2
+  let width = 240
+  let sy = 32
+  let height = 64
+
+  SDL.copy
+    (renderer $ s^.env)
+    hungry
+    Nothing
+    (Just (SDLWrapper.makeRect (cx - (width `div` 2)) sy width height))
+
