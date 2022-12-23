@@ -7,6 +7,9 @@ import Control.Lens
 import Scene.EffectObject
 import Vec
 import Rendering
+import Scene.EffectObjectAct
+import Scene.Player
+
 
 
 
@@ -18,7 +21,7 @@ communicatorAct = ActorAct
 
 
 updateCommunicator :: Scene -> Scene
-updateCommunicator s = 
+updateCommunicator s =
   onCroppedHarvest s
 
 
@@ -30,22 +33,12 @@ onCroppedHarvest s =
       len = length cropped
 
       effects = foldr (\c e -> e ++ birthOvalElem c) [] cropped
-      meta' = over (playingRecord . currScore) (+ len) (s ^. metaInfo)
 
-  in s 
+  in s
     & harvestManager .~ hm { croppedStack = [] }
+    & player %~ full %~ (`incFullness` len)
     & effectObjects %~ (++ effects)
-    & metaInfo .~ meta'
+    & metaInfo %~ (playingRecord . currScore) %~ (+ len)
 
-
--- 刈り取られたときに小判を生成
-birthOvalElem :: CroppedHarvest -> [EffectObject]
-birthOvalElem (CroppedHarvest pos) = 
-    [(\(x, y) -> OvalElem
-        0
-        (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4))
-        (Vec 0 $ - 4)
-        $ 2 * abs (2 + y))
-      (x0, y0) | x0 <- [-2 .. 2], y0 <- [-2 .. 2]]
 
 

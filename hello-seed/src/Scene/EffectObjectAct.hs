@@ -1,7 +1,8 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 
 module Scene.EffectObjectAct
-(effectObjectsAct
+( effectObjectsAct
+, birthOvalElem
 ) where
 import Scene.EffectObject (EffectObject (OvalElem, BlobElem))
 import Control.Monad.Cont
@@ -47,6 +48,17 @@ checkBirthNewEffect s = (checkPlayer . checkEffs) []
 
     checkPlayer = \temp -> temp ++ checkBirthBlobElem s
     checkEffs = \temp -> foldr (\e effs -> effs ++ generateEffect e) temp currList
+
+
+-- 刈り取られたときに小判を生成
+birthOvalElem :: CroppedHarvest -> [EffectObject]
+birthOvalElem (CroppedHarvest pos) = 
+    [(\(x, y) -> OvalElem
+        0
+        (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4))
+        (Vec 0 $ - 4)
+        $ 2 * abs (2 + y))
+      (x0, y0) | x0 <- [-2 .. 2], y0 <- [-2 .. 2]]
 
 
 -- checkBirthOvalElem :: Scene -> Harvest -> [EffectObject]

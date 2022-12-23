@@ -108,17 +108,29 @@ renderText s str (TextTexCache tex buff) start align style = do
   renderPreRenderedText (renderer $ s^.env) tex start'
 
 
+-- Hungry / Stuffedの表示
 renderFullness :: MonadIO m => Scene -> m()
 renderFullness s = do
   let hungry = logo_hungry $ imageRsc $ s ^. env
-  let cx = fromIntegral $ getX $ (s ^. (metaInfo . screenSize)) `divVec` 2
-  let width = 240
-  let sy = 32
-  let height = 64
+      stuffed = logo_stuffed $ imageRsc $ s ^. env
+      cx = fromIntegral $ getX $ (s ^. (metaInfo . screenSize)) `divVec` 2
+      width = 240
+      sy = 32
+      height = 64
 
+  let pf = s ^. (player . full)
+      fullRate = (fromIntegral (pf ^. currFull) / fromIntegral (pf ^. maxFull)) :: Float
+      stuffedW = floor $ fromIntegral width * fullRate
+
+  -- Hungry
   SDL.copy
     (renderer $ s^.env)
     hungry
     Nothing
-    (Just (SDLWrapper.makeRect (cx - (width `div` 2)) sy width height))
-
+    (Just (SDLWrapper.makeRect (cx + stuffedW - (width `div` 2)) sy (width - stuffedW) height))
+  -- Stuffed
+  SDL.copy
+    (renderer $ s^.env)
+    stuffed
+    Nothing
+    (Just (SDLWrapper.makeRect (cx - (width `div` 2)) sy stuffedW height))

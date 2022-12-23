@@ -3,7 +3,6 @@
 module Scene.HarvestManager where
 import Vec
 import Rendering
-import Types
 
 
 type ChargingCount = Int
