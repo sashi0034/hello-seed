@@ -35,6 +35,13 @@ playerAct = ActorAct
   (ActorRenderIO renderPlayer)
 
 
+infoUIAct :: ActorAct
+infoUIAct = ActorAct
+  (ActorUpdate $ actUpdateScene infoUI updateInfoUI)
+  (ActorActive $ const True)
+  (ActorRenderIO renderInfoUI)
+
+
 setupScene :: Scene -> Scene
 setupScene s =
   let acts =

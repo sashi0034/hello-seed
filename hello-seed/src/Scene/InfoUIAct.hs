@@ -1,5 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
-module Scene.InfoUIAct( infoUIAct ) where
+{-# LANGUAGE ConstraintKinds #-}
+module Scene.InfoUIAct
+( updateInfoUI
+, renderInfoUI ) where
 import Control.Monad.Cont
 import qualified SDL
 import Scene.InfoUI
@@ -14,15 +17,28 @@ import qualified SDL.Font
 import Control.Lens
 import ImageRsc (ImageRsc(logo_hungry, logo_stuffed))
 import qualified SDLWrapper
+import qualified SDL.Primitive
+import Linear
+import AnimUtil (degToRad, convertRGB)
 
 
 
 
-infoUIAct :: ActorAct
-infoUIAct = ActorAct
-  (ActorUpdate id)
-  (ActorActive $ const True)
-  (ActorRenderIO renderInfoUI)
+type InfoUIUpdate s =
+  ( HasInfoUI s InfoUI )
+
+
+updateInfoUI :: ( InfoUIUpdate s) => s -> InfoUI
+updateInfoUI s =
+  let ui = s^.infoUI
+  in ui { uiFullness = updateFullnessInfo s }
+
+
+updateFullnessInfo :: ( InfoUIUpdate s) => s -> UiFullness
+updateFullnessInfo s = let f = uiFullness $ s^.infoUI
+  in case f of
+    UiFullCharging c ->
+      UiFullCharging $ c + 1
 
 
 renderInfoUI :: ( MonadIO m ) => Scene -> m ()
@@ -57,10 +73,10 @@ renderInfoUI s = do
     (isSceneState Title s)
     $ do
       renderText s "Full Up Blobwov" (textTitle ui)
-        ((s^.metaInfo^.screenSize) `divVec` 2)
+        ((s ^. (metaInfo . screenSize)) `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 200 255 80 255
       renderText s "Press Left Click To Start" (textTitlePas ui)
-        ((s^.metaInfo^.screenSize) `divVec` 2 ~+ Vec 0 128)
+        ((s ^. (metaInfo . screenSize)) `divVec` 2 ~+ Vec 0 128)
         MiddleCenter DefaultStyle
 
 
@@ -110,27 +126,43 @@ renderText s str (TextTexCache tex buff) start align style = do
 
 -- Hungry / Stuffedの表示
 renderFullness :: MonadIO m => Scene -> m()
-renderFullness s = do
-  let hungry = logo_hungry $ imageRsc $ s ^. env
+renderFullness s =
+  let uiFull = uiFullness $ s ^. infoUI
+      r = renderer $ s^.env
+
+      hungry = logo_hungry $ imageRsc $ s ^. env
       stuffed = logo_stuffed $ imageRsc $ s ^. env
+
       cx = fromIntegral $ getX $ (s ^. (metaInfo . screenSize)) `divVec` 2
       width = 240
       sy = 32
       height = 64
 
-  let pf = s ^. (player . full)
-      fullRate = (fromIntegral (pf ^. currFull) / fromIntegral (pf ^. maxFull)) :: Float
-      stuffedW = floor $ fromIntegral width * fullRate
+  in case uiFull of
+    (UiFullCharging frame) -> do
+      let pf = s ^. (player . full)
+          fullRate = (fromIntegral (pf ^. currFull) / fromIntegral (pf ^. maxFull)) :: Float
+          stuffedW = floor $ fromIntegral width * fullRate
 
-  -- Hungry
-  SDL.copy
-    (renderer $ s^.env)
-    hungry
-    Nothing
-    (Just (SDLWrapper.makeRect (cx + stuffedW - (width `div` 2)) sy (width - stuffedW) height))
-  -- Stuffed
-  SDL.copy
-    (renderer $ s^.env)
-    stuffed
-    Nothing
-    (Just (SDLWrapper.makeRect (cx - (width `div` 2)) sy stuffedW height))
+      let sx1 = cx + stuffedW - (width `div` 2)
+          w1 = width - stuffedW
+
+          sx2 = cx - (width `div` 2)
+          w2 = stuffedW
+
+          lineY = sy + height + 4
+          lineW = 5
+          amp = floor $ abs $ 4 * sin (degToRad $ 10 * frame)
+
+      -- Hungry
+      SDL.copy r hungry Nothing (Just (SDLWrapper.makeRect sx1 sy w1 height))
+      when (w1 > 0) $ SDL.Primitive.thickLine r (V2 sx1 lineY) (V2 (sx1 + w1) lineY) lineW (V4 0 152 255 255)
+
+      -- Stuffed
+      SDL.copy r stuffed Nothing (Just (SDLWrapper.makeRect sx2 (sy - amp) w2 (height + amp * 2)))
+      when 
+        (w2 > 0) 
+        $ SDL.Primitive.thickLine 
+          r (V2 sx2 lineY) (V2 (sx2 + w2) lineY) (lineW + amp) 
+          (convertRGB V4 (40 - amp * 10) (255 - amp * 10) (120 + amp * 15))
+

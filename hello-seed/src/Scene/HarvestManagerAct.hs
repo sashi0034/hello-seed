@@ -85,8 +85,7 @@ renderHarvest s h =
     pos = installedPos h
     r = Rendering.renderPixelartCentral (renderer $ s^.env) (corn_24x24 $ imageRsc $ s^.env)
     r' = Rendering.renderPixelart (renderer $ s^.env) (corn_24x24 $ imageRsc $ s^.env)
-    state = currState h
-  in case state of
+  in case currState h of
 
     Charging count -> do
       -- チャージ背景
