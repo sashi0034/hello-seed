@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use if" #-}
 
 module Scene.CommunicatorAct where
 import Scene.Scene
@@ -9,6 +11,7 @@ import Vec
 import Rendering
 import Scene.EffectObjectAct
 import Scene.Player
+import qualified Scene.Player as Player
 
 
 
@@ -22,7 +25,8 @@ communicatorAct = ActorAct
 
 updateCommunicator :: Scene -> Scene
 updateCommunicator s =
-  onCroppedHarvest s
+    onBecomePlayerPacman
+  $ onCroppedHarvest s
 
 
 -- トウモロコシが刈られたとき
@@ -41,4 +45,11 @@ onCroppedHarvest s =
     & metaInfo %~ (playingRecord . currScore) %~ (+ len)
 
 
+-- パックマンになる
+onBecomePlayerPacman :: Scene -> Scene
+onBecomePlayerPacman s =
+  case canBecomePacman $ s^.player of
+    False -> s
+    True -> s
+      & player .~ ((s^.player) {playerState = Pacman 0} )
 

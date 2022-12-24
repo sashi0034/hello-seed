@@ -8,7 +8,7 @@ import ImageRsc (ImageRsc(corn_24x24))
 import AnimUtil
 import CollisionUtil (hitRectRect, ColRect (ColRect))
 import qualified Scene.Player as Player
-import Scene.Player (isAlivePlayer, Player (playerState))
+import Scene.Player (isPlayerAlive, Player (playerState))
 import Control.Lens
 import Control.Monad.State
 
@@ -72,7 +72,7 @@ updateHarvestByState s = do
           isReaped = hitRectRect
             (ColRect (Player.playerPos p ~- playerSize ~* 0.5) playerSize)
             (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
-          (nextState, cropped) = if isReaped && isAlivePlayer (playerState p)
+          (nextState, cropped) = if isReaped && isPlayerAlive (playerState p)
             then (Charging 0, True) -- 収穫成功
             else (Ripened, False) -- そのまま
       put h{ currState=nextState }

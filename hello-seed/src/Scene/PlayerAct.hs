@@ -14,13 +14,14 @@ import InputState
 import Scene.Player
 import qualified Rendering
 import Rendering (SrcRect(SrcRect))
-import AnimUtil (calcAnimFrameIndex)
+import AnimUtil (calcAnimFrameIndex, valueWithEaseBegin, RangeF (RangeF))
 import CollisionUtil (hitRectRect, ColRect (ColRect))
 import qualified Scene.MeteorManager as MeteorManager
 import Scene.MeteorManager (Meteor, MeteorManager)
 import qualified SDL.Primitive
 import Linear
 import Control.Lens
+import Ease
 
 
 
@@ -39,7 +40,7 @@ updatePlayer s =
 
       newState = updatePlayerState meteors p
 
-      p' = if isHitStopping s || not (isAlivePlayer newState)
+      p' = if isHitStopping s || not (isPlayerAlive newState)
         then p{playerState = newState}
         else p
               { playerPos = newPos
@@ -60,7 +61,7 @@ updatePlayerState mets p =
         then Normal
         else HitStopping 40 -- 当たった
 
-    Pacman -> Pacman
+    Pacman fc -> Pacman $ fc + 1
 
     (HitStopping count) -> if count > 0
       then HitStopping $ count - 1
@@ -111,7 +112,7 @@ calcNewPosAndAngle currPos inputPos oldAngDeg
           oldAngDeg * (1-rate) + angDeg * rate
 
 
-renderPlayer :: 
+renderPlayer ::
   ( HasPlayer s Player
   , HasEnv s Environment) => s -> IO ()
 renderPlayer s =
@@ -132,7 +133,7 @@ renderPlayer s =
     Dead _ -> return ()
 
     -- パックマン 
-    Pacman -> do
+    Pacman frame -> do
       let ang = playerAngDeg p
           halfArcBase = 45 :: Float
           animSpeed = 20
@@ -144,7 +145,8 @@ renderPlayer s =
           orange = V4 255 196 24 255
           black = V4 80 64 48 255
           white = V4 255 244 220 255
-          radius = 64
+          radius = floor
+            $ valueWithEaseBegin (backOut (Overshoot 5)) (RangeF 12 64) 20 frame
           borderWidth = 4
       -- 白フチ
       SDL.Primitive.fillPie r (convertVecInt V2 dest) (radius + borderWidth * 2) (arcStart - borderWidth) (arcEnd + borderWidth) white

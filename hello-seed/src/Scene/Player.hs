@@ -5,12 +5,14 @@ import Vec
 import Types (FrameCount, LeftFrame)
 import Control.Lens (makeLenses)
 import Control.Lens.Lens
+import ConstParam
+import Control.Lens.Getter
 
 
 type Degree = Float
 
 
-data Fullness = Fullness 
+data Fullness = Fullness
   { _maxFull :: Int
   , _currFull :: Int
   }
@@ -20,8 +22,8 @@ makeLenses ''Fullness
 
 
 incFullness :: Fullness -> Int -> Fullness
-incFullness f v = 
-  let next = v + _currFull f 
+incFullness f v =
+  let next = v + _currFull f
   in f { _currFull = min next $ _maxFull f }
 
 
@@ -33,7 +35,7 @@ data Player = Player
   , _full :: Fullness
   }
 
-data PlayerState = Normal | Pacman | HitStopping LeftFrame | Dead FrameCount
+data PlayerState = Normal | Pacman FrameCount | HitStopping LeftFrame | Dead FrameCount
   deriving (Eq)
 
 
@@ -47,12 +49,18 @@ initialPlayer screenSize = Player
   , playerAngDeg = 0
   , animCount = 0
   , playerState = Normal
-  , _full = Fullness{ _maxFull=30, _currFull=0 }
+  , _full = Fullness{ _maxFull= maxPlayerFullness, _currFull=0 }
   }
 
 
-isAlivePlayer :: PlayerState -> Bool
-isAlivePlayer state = state == Normal || state == Pacman
+isPlayerAlive :: PlayerState -> Bool
+isPlayerAlive ps = ps == Normal || isPlayerPacman ps
+
+
+isPlayerPacman :: PlayerState -> Bool
+isPlayerPacman ps = case ps of
+  Pacman _ -> True
+  _ -> False
 
 
 countAfterDiedPlayer :: PlayerState -> Int
@@ -62,3 +70,9 @@ countAfterDiedPlayer _ = 0
 
 playerSize :: Vec Int
 playerSize = Vec 24 24
+
+
+canBecomePacman :: Player -> Bool
+canBecomePacman p =
+      playerState p == Normal
+  && (p ^. (full . currFull) >= p ^. (full . maxFull))

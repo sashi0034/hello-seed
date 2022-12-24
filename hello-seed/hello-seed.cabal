@@ -20,6 +20,7 @@ executable hello-seed
                      , AnimUtil
                      , CollisionUtil
                      , Types
+                     , ConstParam
                      , Scene.Scene
                      , Scene.SceneAct
                      , Scene.Player
@@ -48,5 +49,6 @@ executable hello-seed
                      , random
                      , mtl
                      , lens
+                     , ease
   default-language:    Haskell2010
 

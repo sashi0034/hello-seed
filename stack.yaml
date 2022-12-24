@@ -11,7 +11,8 @@ resolver: lts-18.28
 packages:
   - ./hello-seed
 
-extra-deps: []
+extra-deps: 
+  - ease-0.1.0.2@sha256:03f620cd1f2347823d46168419c39a570ed555b67edd48294d07ebe723c02388,899
 
 flags: {}
 

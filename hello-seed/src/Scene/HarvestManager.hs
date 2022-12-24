@@ -3,6 +3,7 @@
 module Scene.HarvestManager where
 import Vec
 import Rendering
+import ConstParam
 
 
 type ChargingCount = Int
@@ -20,7 +21,7 @@ data Harvest = Harvest
 
 
 maxChargingCount :: Int
-maxChargingCount = 300
+maxChargingCount = maxHarvestChargingCount
 
 
 data HarvestManager = HarvestManager
