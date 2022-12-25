@@ -7,6 +7,8 @@ import Control.Lens (makeLenses)
 import Control.Lens.Lens
 import ConstParam
 import Control.Lens.Getter
+import CollisionUtil (ColRect (ColRect))
+import AnimUtil (degToRad)
 
 
 type Degree = Float
@@ -76,3 +78,12 @@ canBecomePacman :: Player -> Bool
 canBecomePacman p =
       playerState p == Normal
   && (p ^. (full . currFull) >= p ^. (full . maxFull))
+
+
+colRectPacman :: Player -> ColRect
+colRectPacman p =
+  let ang = degToRad $ playerAngDeg p :: Float
+      offset = Vec (cos ang) (sin ang) ~* 24
+      colPos = offset ~+ playerPos p
+      colSize = Vec 64 (64 :: Float)
+  in ColRect (colPos ~- (colSize ~* 0.5)) colSize

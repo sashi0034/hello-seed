@@ -28,11 +28,24 @@ actUpdateScene :: Lens' Scene a -> ( Scene -> a ) -> Scene -> Scene
 actUpdateScene l func s = s & l .~ func s
 
 
+actUpdateSceneIO :: (MonadIO m) => Lens' Scene a -> ( Scene -> m a ) -> Scene -> m Scene
+actUpdateSceneIO l func s = do
+  u <- func s
+  return $ s & l .~ u
+
+
 playerAct :: ActorAct
 playerAct = ActorAct
   (ActorUpdate $ actUpdateScene player updatePlayer)
   (ActorActive $ isSceneState Playing)
   (ActorRenderIO renderPlayer)
+
+
+meteorManagerAct :: ActorAct
+meteorManagerAct = ActorAct
+  (ActorUpdateIO $ actUpdateSceneIO meteorManager updateMeteorManager)
+  (ActorActive $ isSceneState Playing)
+  (ActorRenderIO renderMeteorManager)
 
 
 infoUIAct :: ActorAct

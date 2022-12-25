@@ -183,7 +183,7 @@ isSceneState state s = state == s ^. (metaInfo . sceneState)
 
 
 
-isHitStopping :: (HasEnv s Environment, HasPlayer s Player) => s -> Bool
+isHitStopping :: (HasPlayer s Player) => s -> Bool
 isHitStopping s =
   let ps = playerState $ s^.player
   in case ps of

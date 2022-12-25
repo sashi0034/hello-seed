@@ -12,6 +12,10 @@ import Rendering
 import Scene.EffectObjectAct
 import Scene.Player
 import qualified Scene.Player as Player
+import Scene.MeteorManager
+import CollisionUtil (hitRectRect)
+import Data.List
+import Debug.Trace (traceShowId)
 
 
 
@@ -26,7 +30,8 @@ communicatorAct = ActorAct
 updateCommunicator :: Scene -> Scene
 updateCommunicator s =
     onBecomePlayerPacman
-  $ onCroppedHarvest s
+  $ onCroppedHarvest 
+  $ onPacmanEatEnemy s
 
 
 -- トウモロコシが刈られたとき
@@ -53,3 +58,16 @@ onBecomePlayerPacman s =
     True -> s
       & player .~ ((s^.player) {playerState = Pacman 0} )
 
+
+-- パックマンで敵を食べた
+onPacmanEatEnemy :: Scene -> Scene
+onPacmanEatEnemy s = let p = s^.player
+  in case playerState p of
+    Pacman frame ->
+      let colPac = colRectPacman p
+          mm = s^.meteorManager
+          (eaten, alive) = partition
+            (hitRectRect colPac . colRectMeteor) (meteorList mm)
+      in s
+        & meteorManager .~ mm {meteorList = alive}
+    _ -> s

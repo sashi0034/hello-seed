@@ -1,10 +1,16 @@
 
-module Scene.MeteorManager where
-import Vec (VecF, Vec (Vec))
+module Scene.MeteorManager
+( Meteor(..)
+, MeteorManager(..)
+, initialMeteorManager
+, meteorCellSize
+, colRectMeteor
+) where
+import Vec (VecF, Vec (Vec), toVecF, (~-), (~*))
+import CollisionUtil
 
 data Meteor = Meteor
   { currPos :: VecF
-  , isDead :: Bool
   , animCount :: Int
   , velArgument :: Float }
 
@@ -21,3 +27,10 @@ initialMeteorManager = MeteorManager
 
 meteorCellSize :: Vec Int
 meteorCellSize = Vec 16 16
+
+
+colRectMeteor :: Meteor -> ColRect
+colRectMeteor met = 
+  ColRect (currPos met ~- (metSize ~* 0.5)) metSize
+  where
+    metSize = toVecF meteorCellSize

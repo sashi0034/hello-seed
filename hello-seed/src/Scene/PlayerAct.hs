@@ -17,7 +17,7 @@ import Rendering (SrcRect(SrcRect))
 import AnimUtil (calcAnimFrameIndex, valueWithEaseBegin, RangeF (RangeF))
 import CollisionUtil (hitRectRect, ColRect (ColRect))
 import qualified Scene.MeteorManager as MeteorManager
-import Scene.MeteorManager (Meteor, MeteorManager)
+import Scene.MeteorManager (Meteor, MeteorManager, colRectMeteor)
 import qualified SDL.Primitive
 import Linear
 import Control.Lens
@@ -77,11 +77,10 @@ isHitWithMeteorList p = foldr (\met hit -> hit || isHitWithMeteor p met) False
 isHitWithMeteor :: Player -> Meteor -> Bool
 isHitWithMeteor p met =
   hitRectRect
-    (ColRect (playerPos p ~- thisSize ~* 0.5) thisSize)
-    (ColRect (MeteorManager.currPos met ~- metSize ~* 0.5) metSize)
+    (ColRect (playerPos p ~- (thisSize ~* 0.5)) thisSize)
+    (colRectMeteor met)
   where
     thisSize = toVecF playerSize
-    metSize = toVecF MeteorManager.meteorCellSize
 
 
 calcNewPosAndAngle :: Vec Float -> Vec Float -> Degree -> (Vec Float, Degree)

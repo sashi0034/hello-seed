@@ -3,7 +3,7 @@ import Vec (VecF, Vec (Vec))
 
 
 type RectSize = VecF
-data ColRect = ColRect VecF RectSize
+data ColRect = ColRect VecF RectSize deriving (Show)
 
 
 hitRectRect :: ColRect -> ColRect -> Bool

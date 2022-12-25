@@ -1,5 +1,10 @@
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 
-module Scene.MeteorManagerAct where
+module Scene.MeteorManagerAct
+( updateMeteorManager
+, renderMeteorManager
+) where
 import Scene.MeteorManager
 import Scene.Scene
 import Control.Monad.IO.Class ( MonadIO(..) )
@@ -12,22 +17,23 @@ import Control.Monad
 import System.Random
 import AnimUtil (calcAnimFrameIndex)
 import Control.Lens
+import qualified Scene.Player as Player
 
 
 
-meteorManagerAct :: ActorAct
-meteorManagerAct = ActorAct
-  (ActorUpdateIO updateMeteorManager)
-  (ActorActive $ isSceneState Playing)
-  (ActorRenderIO renderMeteorManager)
+
+type MeteorUpdate s =
+  ( HasMeteorManager s MeteorManager
+  , HasPlayer s Player.Player
+  , HasMetaInfo s SceneMetaInfo )
 
 
-updateMeteorManager :: MonadIO m => Scene -> m Scene
+updateMeteorManager :: (MeteorUpdate s, MonadIO m) => s -> m MeteorManager
 updateMeteorManager s = do
   let mm = s^.meteorManager
       newFrameCount = 1 + managerFrameCount mm
 
-  if isHitStopping s then return s else do
+  if isHitStopping s then return mm else do
 
     greaterMeteorList <- checkPopNewMeteor s newFrameCount (meteorList mm)
 
@@ -41,10 +47,10 @@ updateMeteorManager s = do
 
     --liftIO $ print $ length updatedMeteorList
 
-    return $ s & meteorManager .~ mm'
+    return mm'
 
 
-updateMeteor :: Scene -> Meteor -> Meteor
+updateMeteor :: MeteorUpdate s => s -> Meteor -> Meteor
 updateMeteor _ meteor = meteor
   { currPos = newPos
   , animCount = newAnimCount
@@ -92,11 +98,11 @@ isInScreen screenSize' meteor =
     screenH = fromIntegral $ getY screenSize'
 
 
-isOutScreen :: VecInt -> Meteor -> Bool
-isOutScreen screenSize' meteor = not (isInScreen screenSize' meteor)
+-- isOutScreen :: VecInt -> Meteor -> Bool
+-- isOutScreen screenSize' meteor = not (isInScreen screenSize' meteor)
 
 
-checkPopNewMeteor :: MonadIO m => Scene -> Int -> [] Meteor -> m ([] Meteor)
+checkPopNewMeteor :: (MeteorUpdate s, MonadIO m) => s -> Int -> [] Meteor -> m ([] Meteor)
 checkPopNewMeteor s count meteors
 
   | (count `mod` popDuration) == 0 = do
@@ -107,7 +113,6 @@ checkPopNewMeteor s count meteors
 
     let newMeteor = Meteor {
         currPos = startPos
-      , isDead = False
       , animCount = 0
       , velArgument = randArg
       }
