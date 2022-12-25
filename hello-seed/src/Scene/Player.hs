@@ -86,4 +86,4 @@ colRectPacman p =
       offset = Vec (cos ang) (sin ang) ~* 24
       colPos = offset ~+ playerPos p
       colSize = Vec 64 (64 :: Float)
-  in ColRect (colPos ~- (colSize ~* 0.5)) colSize
+  in ColRect (colPos ~- colSize ~* 0.5) colSize

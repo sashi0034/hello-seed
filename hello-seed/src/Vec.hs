@@ -21,6 +21,12 @@ divVec :: Integral a => Vec a -> a -> Vec a
 (Vec x1 y1) `divVec` d = Vec (x1 `div` d) (y1 `div` d)
 
 
+infixl 3 ~+
+infixl 3 ~-
+infixl 5 ~*
+infixl 4 `divVec`
+
+
 type VecF = Vec Float
 
 
