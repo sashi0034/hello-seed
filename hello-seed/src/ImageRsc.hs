@@ -29,6 +29,9 @@ data ImageRsc = ImageRsc
 data ImageRenderer = ImageRenderer ImageRsc SDL.Renderer
 
 
+type ImageGetter = (ImageRsc -> SDL.Texture)
+
+
 loadImageRsc :: (MonadIO m) => SDL.Renderer -> (ImageRsc -> m a) -> m ()
 loadImageRsc r op = 
   SDLWrapper.withTexture r "./assets/blobwob_24x24.png" $ \blobwob_24x24' -> 

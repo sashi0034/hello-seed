@@ -55,6 +55,7 @@ readInput = do
 
 
 
+convertP :: Point f a -> f a
 convertP (LA.P p) = p
 
 convertV2 :: SDL.V2 CInt -> VecInt

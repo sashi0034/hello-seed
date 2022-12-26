@@ -18,6 +18,7 @@ import System.Random
 import AnimUtil (calcAnimFrameIndex)
 import Control.Lens
 import qualified Scene.Player as Player
+import Scene.MeteorManager (Meteor(metImage))
 
 
 
@@ -115,6 +116,7 @@ checkPopNewMeteor s count meteors
         currPos = startPos
       , animCount = 0
       , velArgument = randArg
+      , metImage = octocat_16x16
       }
 
     return $ meteors ++ [newMeteor]
@@ -128,7 +130,7 @@ checkPopNewMeteor s count meteors
 
 renderMeteor :: MonadIO m => SDL.Renderer -> ImageRsc -> Meteor -> m ()
 renderMeteor r rsc meteor = do
-  Rendering.renderPixelartCentral r (octocat_16x16 rsc) dest $ SrcRect src cellSize
+  Rendering.renderPixelartCentral r (metImage meteor rsc) dest $ SrcRect src cellSize
   where
     cellSize = meteorCellSize
     dest = toVecInt $ currPos meteor

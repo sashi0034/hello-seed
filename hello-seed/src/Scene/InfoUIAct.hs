@@ -82,8 +82,8 @@ renderInfoUI s = do
 
   where
     pr = s ^. (metaInfo . playingRecord)
-    score = "Curr Score :  " ++ show (pr ^. currLevel)
-    high  = "High Score :  " ++ show (pr ^. currLevel)
+    score = "Curr Score :  " ++ show (pr ^. currScore)
+    high  = "High Score :  " ++ show (pr ^. highScore)
     lv = "Level :  " ++ show (pr ^. currLevel)
 
 

@@ -15,7 +15,7 @@ import qualified Scene.Player as Player
 import Scene.MeteorManager
 import CollisionUtil (hitRectRect)
 import Data.List
-import Debug.Trace (traceShowId)
+import qualified Scene.MeteorManager as MeteorManager
 
 
 
@@ -30,7 +30,7 @@ communicatorAct = ActorAct
 updateCommunicator :: Scene -> Scene
 updateCommunicator s =
     onBecomePlayerPacman
-  $ onCroppedHarvest 
+  $ onCroppedHarvest
   $ onPacmanEatEnemy s
 
 
@@ -66,8 +66,15 @@ onPacmanEatEnemy s = let p = s^.player
     Pacman frame ->
       let colPac = colRectPacman p
           mm = s^.meteorManager
-          (eaten, alive) = partition
+          (metEaten, metAlive) = partition
             (hitRectRect colPac . colRectMeteor) (meteorList mm)
+          eatenEffs eaten = makeScrapEffect1
+            60 
+            2
+            (MeteorManager.currPos eaten) 
+            (SrcRect (Vec 0 0) meteorCellSize)
+            (metImage eaten) 
       in s
-        & meteorManager .~ mm {meteorList = alive}
+        & meteorManager .~ mm { meteorList = metAlive}
+        & effectObjects %~ (++ concatMap eatenEffs metEaten)
     _ -> s

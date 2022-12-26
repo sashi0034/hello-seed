@@ -72,7 +72,7 @@ updateHarvestByState s = do
           isReaped = hitRectRect
             (ColRect (Player.playerPos p ~- playerSize ~* 0.5) playerSize)
             (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
-          (nextState, cropped) = if isReaped && isPlayerAlive (playerState p)
+          (nextState, cropped) = if isReaped && (playerState p == Player.Normal)
             then (Charging 0, True) -- 収穫成功
             else (Ripened, False) -- そのまま
       put h{ currState=nextState }

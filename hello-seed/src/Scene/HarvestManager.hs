@@ -63,6 +63,7 @@ makePosList baseX baseY numX numY spaceX spaceY =
 
 
 
+makePosRow :: Num a => a -> a -> [a] -> a -> [Vec a]
 makePosRow baseX y xIndexes space = map (`Vec` y) xList
   where
     xList = map (+ baseX) offset

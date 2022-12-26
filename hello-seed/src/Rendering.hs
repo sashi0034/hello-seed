@@ -5,7 +5,7 @@ import Vec
 import qualified SDLWrapper
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.IORef (IORef, readIORef, writeIORef)
-import SDL.Font
+import SDL.Font ( Font, blended, solid, Color )
 import Data.Text
 import Control.Monad
 import Data.Maybe (fromMaybe)
@@ -18,7 +18,7 @@ pixelartScale :: Int
 pixelartScale = 3
 
 
-data SrcRect = SrcRect VecInt VecInt
+data SrcRect = SrcRect VecInt VecInt deriving (Show)
 
 
 renderTexture :: (MonadIO m) => Int -> SDL.Renderer -> SDL.Texture -> VecInt -> SrcRect -> m()

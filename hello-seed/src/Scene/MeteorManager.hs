@@ -8,11 +8,13 @@ module Scene.MeteorManager
 ) where
 import Vec (VecF, Vec (Vec), toVecF, (~-), (~*))
 import CollisionUtil
+import ImageRsc (ImageGetter)
 
 data Meteor = Meteor
   { currPos :: VecF
   , animCount :: Int
-  , velArgument :: Float }
+  , velArgument :: Float
+  , metImage :: ImageGetter }
 
 data MeteorManager = MeteorManager
   { meteorList :: [] Meteor

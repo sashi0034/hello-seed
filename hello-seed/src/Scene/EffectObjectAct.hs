@@ -4,7 +4,7 @@ module Scene.EffectObjectAct
 ( effectObjectsAct
 , birthOvalElem
 ) where
-import Scene.EffectObject (EffectObject (OvalElem, BlobElem))
+import Scene.EffectObject (EffectObject (OvalElem, BlobElem, ScrapTexture), isAliveEffectParam, effFrame, effPos, effVec, updateEffectParam, makeScrapEffect)
 import Control.Monad.Cont
 import ImageRsc (ImageRenderer (ImageRenderer), ImageRsc (oval_16x16, crying_laughing_16x16))
 import Vec
@@ -13,6 +13,7 @@ import Scene.Scene
 import Scene.HarvestManager
 import Scene.Player as Player
 import Control.Lens
+import Debug.Trace (traceShowId, trace)
 
 
 
@@ -47,12 +48,12 @@ checkBirthNewEffect s = (checkPlayer . checkEffs) []
     currList = s ^. effectObjects
 
     checkPlayer = \temp -> temp ++ checkBirthBlobElem s
-    checkEffs = \temp -> foldr (\e effs -> effs ++ generateEffect e) temp currList
+    checkEffs = \temp -> foldr (\e effs -> effs ++ generateEffect s e) temp currList
 
 
 -- 刈り取られたときに小判を生成
 birthOvalElem :: CroppedHarvest -> [EffectObject]
-birthOvalElem (CroppedHarvest pos) = 
+birthOvalElem (CroppedHarvest pos) =
     [(\(x, y) -> OvalElem
         0
         (toVecF $ pos ~+ (Vec x y ~* pixelartScale ~* 4))
@@ -89,9 +90,16 @@ checkBirthBlobElem s = case s^.metaInfo ^. sceneState of
 
 
 
-generateEffect :: EffectObject -> [EffectObject]
+generateEffect :: Scene -> EffectObject -> [EffectObject]
 
-generateEffect _ = []
+-- スクラップをさらに細かく
+generateEffect s (ScrapTexture param image srcRect scrapCount) =
+  if scrapCount > 0 && not (isAliveEffect $ updateEffect s (ScrapTexture param image srcRect scrapCount))
+    then makeScrapEffect (scrapCount - 1) (param^.effFrame) speed (param^.effPos) srcRect image
+    else []
+  where speed = 0.25 * sqrt (sqrMagnitude $ param^.effVec)
+
+generateEffect _ _ = []
 
 
 
@@ -112,7 +120,10 @@ updateEffect _ (OvalElem count pos vel delay) = if delay <= 0
 updateEffect _ (BlobElem count pos vec) =
   BlobElem (count+1) (pos~+vec) vec
 
-
+updateEffect _ (ScrapTexture param image srcRect scrapCount)  =
+  let param' = updateEffectParam param
+        & effVec %~ (~+ Vec 0 0.1)
+  in ScrapTexture param' image srcRect scrapCount
 
 
 
@@ -123,8 +134,7 @@ isAliveEffect (OvalElem count _ _ _) = count < (baseFps * 2) `div` 2
 
 isAliveEffect (BlobElem count _ _) = count < (baseFps * 1) `div` 2
 
-
-
+isAliveEffect (ScrapTexture param _ _ scrapCount) = isAliveEffectParam param
 
 
 
@@ -140,5 +150,8 @@ renderEffect (ImageRenderer rsc r) (BlobElem _ pos _) = do
     (toVecInt pos) $
     SrcRect (Vec 0 0) (Vec 16 16)
 
+renderEffect (ImageRenderer rsc r) (ScrapTexture param image srcRect _) = do
+  Rendering.renderPixelartCentral r (image rsc)
+    (toVecInt $ param^.effPos) srcRect
 
 
