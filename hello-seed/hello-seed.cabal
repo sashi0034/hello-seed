@@ -35,7 +35,7 @@ executable hello-seed
                      , Scene.HarvestManagerAct
                      , Scene.EffectObject
                      , Scene.EffectObjectAct
-                     , Scene.CommunicatorAct
+                     , Scene.InterAct
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:       base
                      , sdl2

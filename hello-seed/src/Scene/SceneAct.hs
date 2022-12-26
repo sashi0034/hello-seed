@@ -20,7 +20,7 @@ import Scene.Player
 import Data.Foldable (foldlM)
 import Control.Monad
 import Control.Lens
-import Scene.CommunicatorAct
+import Scene.InterAct
 
 
 
@@ -48,6 +48,13 @@ meteorManagerAct = ActorAct
   (ActorRenderIO renderMeteorManager)
 
 
+harvestManagerAct :: ActorAct
+harvestManagerAct = ActorAct
+  (ActorUpdate $ actUpdateScene harvestManager updateHarvestManager)
+  (ActorActive $ isSceneState Playing)
+  (ActorRenderIO renderHarvestManager)
+
+
 infoUIAct :: ActorAct
 infoUIAct = ActorAct
   (ActorUpdate $ actUpdateScene infoUI updateInfoUI)
@@ -65,7 +72,7 @@ setupScene s =
         , meteorManagerAct
         , playerAct
         , infoUIAct
-        , communicatorAct
+        , interAct
         ]
   in s{ _sceneActorActList = acts }
 

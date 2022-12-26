@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use if" #-}
 
-module Scene.CommunicatorAct where
+module Scene.InterAct where
 import Scene.Scene
 import qualified Scene.HarvestManager as HarvestManager
 import Scene.HarvestManager (HarvestManager(croppedStack), Harvest, CroppedHarvest (CroppedHarvest))
@@ -20,8 +20,8 @@ import qualified Scene.MeteorManager as MeteorManager
 
 
 
-communicatorAct :: ActorAct
-communicatorAct = ActorAct
+interAct :: ActorAct
+interAct = ActorAct
   (ActorUpdate updateCommunicator)
   (ActorActive $ const True)
   ActorRenderNone

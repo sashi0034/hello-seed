@@ -1,4 +1,8 @@
-module Scene.HarvestManagerAct (harvestManagerAct) where
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ConstraintKinds #-}
+module Scene.HarvestManagerAct 
+  ( updateHarvestManager
+  , renderHarvestManager) where
 import Scene.HarvestManager
 import Control.Monad.Cont
 import Scene.Scene
@@ -13,11 +17,9 @@ import Control.Lens
 import Control.Monad.State
 
 
-harvestManagerAct :: ActorAct
-harvestManagerAct = ActorAct
-  (ActorUpdate updateHarvestManager)
-  (ActorActive $ isSceneState Playing)
-  (ActorRenderIO renderHarvestManager)
+type HarvestUpdate s = 
+  ( HasHarvestManager s HarvestManager
+  , HasPlayer s Player)
 
 
 renderHarvestManager :: Scene -> IO ()
@@ -27,7 +29,7 @@ renderHarvestManager s = do
     hm = s ^. harvestManager
 
 
-updateHarvestManager :: Scene -> Scene
+updateHarvestManager :: (HarvestUpdate s) => s -> HarvestManager
 updateHarvestManager s =
   let hm = s^.harvestManager
       updated = map (runState (updateHarvest s)) (harvestList hm)
@@ -38,20 +40,20 @@ updateHarvestManager s =
               { harvestList= map snd updated
               , croppedStack = croppedList
               }
-  in s & harvestManager .~ hm'
+  in hm'
 
 
 type Cropped = Bool
 
 
-updateHarvest :: Scene -> State Harvest Cropped
+updateHarvest :: (HarvestUpdate s) => s  -> State Harvest Cropped
 updateHarvest s = do
   h <- get
   put $ h { animCount= 1 + animCount h }
   updateHarvestByState s
 
 
-updateHarvestByState :: Scene -> State Harvest Cropped
+updateHarvestByState :: (HarvestUpdate s) => s  -> State Harvest Cropped
 updateHarvestByState s = do
   h <- get
   case currState h of
