@@ -11,20 +11,22 @@ import CollisionUtil
 import ImageRsc (ImageGetter)
 
 data Meteor = Meteor
-  { currPos :: VecF
-  , animCount :: Int
-  , velArgument :: Float
+  { metPos :: VecF
+  , metAnimCount :: Int
+  , metVelArg :: Float
   , metImage :: ImageGetter }
 
 data MeteorManager = MeteorManager
-  { meteorList :: [] Meteor
-  , managerFrameCount :: Int }
+  { metManagerElements :: [] Meteor
+  , metManagerFrame :: Int
+  , metManagerGenAble :: Int }
 
 
 initialMeteorManager :: MeteorManager
 initialMeteorManager = MeteorManager 
-  { meteorList = []
-  , managerFrameCount = 0 }
+  { metManagerElements = []
+  , metManagerFrame = 0
+  , metManagerGenAble = 20 }
 
 
 meteorCellSize :: Vec Int
@@ -33,6 +35,6 @@ meteorCellSize = Vec 16 16
 
 colRectMeteor :: Meteor -> ColRect
 colRectMeteor met = 
-  ColRect (currPos met ~- (metSize ~* 0.5)) metSize
+  ColRect (metPos met ~- (metSize ~* 0.5)) metSize
   where
     metSize = toVecF meteorCellSize

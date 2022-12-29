@@ -32,7 +32,7 @@ updatePlayer ::
   , HasEnv s Environment) => s -> Player
 updatePlayer s =
   let p = s^.player
-      meteors = MeteorManager.meteorList $ s^.meteorManager
+      meteors = MeteorManager.metManagerElements $ s^.meteorManager
 
       currPos = playerPos p
       mousePos' = toVecF $ mousePos $ mouse $ input $ s^.env

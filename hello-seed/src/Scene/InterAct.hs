@@ -67,14 +67,14 @@ onPacmanEatEnemy s = let p = s^.player
       let colPac = colRectPacman p
           mm = s^.meteorManager
           (metEaten, metAlive) = partition
-            (hitRectRect colPac . colRectMeteor) (meteorList mm)
+            (hitRectRect colPac . colRectMeteor) (metManagerElements mm)
           eatenEffs eaten = makeScrapEffect1
             60 
             2
-            (MeteorManager.currPos eaten) 
+            (MeteorManager.metPos eaten) 
             (SrcRect (Vec 0 0) meteorCellSize)
             (metImage eaten) 
       in s
-        & meteorManager .~ mm { meteorList = metAlive}
+        & meteorManager .~ mm { metManagerElements = metAlive}
         & effectObjects %~ (++ concatMap eatenEffs metEaten)
     _ -> s

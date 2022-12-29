@@ -17,13 +17,15 @@ loadFontRsc :: (MonadIO m) => (FontRsc -> m a) -> m()
 loadFontRsc op =
   SDLWrapper.withFont "./assets/Mplus2-Regular.ttf" 24 $ \mplus24' ->
   withFontOutlined "./assets/Mplus2-Regular.ttf" 24 2 $ \outlinedMplus24' ->
-  withFontOutlined "./assets/Mplus2-Regular.ttf" 96 4 $ \outlinedMplus96' ->
+  withFontOutlined "./assets/Mplus2-Regular.ttf" 96 4 $ \outlinedMplus96' -> 
     
     void $ op (FontRsc
       { mplus24 = mplus24'
       , outlinedMplus24 = outlinedMplus24'
       , outlinedMplus96 = outlinedMplus96'
       })
+    
+    -- liftIO $ print "freed font resource"
 
 
 
