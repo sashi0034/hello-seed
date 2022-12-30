@@ -16,7 +16,7 @@ import Scene.MeteorManager
 import CollisionUtil (hitRectRect)
 import Data.List
 import qualified Scene.MeteorManager as MeteorManager
-import Scene.Background (Background(bgNextInfo), BgNextInfo (BgNextInfo))
+import Scene.Background (Background(bgNextInfo), BgNextInfo (BgNextInfo), getBgImageByLevel)
 import ImageRsc
 
 
@@ -50,7 +50,7 @@ onCroppedHarvest s =
     & harvestManager .~ hm { croppedStack = [] }
     & player %~ full %~ (`incFullness` len)
     & effectObjects %~ (++ effects)
-    & metaInfo %~ (playingRecord . currScore) %~ (+ len)
+    -- & metaInfo %~ (playingRecord . currScore) %~ (+ len)
 
 
 -- パックマンになる
@@ -81,6 +81,7 @@ onPacmanEatEnemy s = let p = s^.player
       in s
         & meteorManager .~ mm { metManagerElements = metAlive}
         & effectObjects %~ (++ concatMap eatenEffs metEaten)
+        & metaInfo %~ (playingRecord . currScore) %~ (+ length metEaten)
     _ -> s
 
 
@@ -91,9 +92,10 @@ onDestroyAllEnemies s =
   in case metManagerGenAble mm == 0 && null (metManagerElements mm)  of
       False -> s
       True ->
-        s
+        let nextLevel = s^.metaInfo^.playingRecord^.currLevel + 1
+        in s
           & meteorManager .~ mm { metManagerGenAble = getMetGenAbleNext }
-          & metaInfo %~ (playingRecord . currLevel) %~ (+1)
-          & background .~ (s^.background) { bgNextInfo = Just $ BgNextInfo bg_b 0 }
+          & metaInfo %~ (playingRecord . currLevel) .~ nextLevel
+          & background .~ (s^.background) { bgNextInfo = Just $ BgNextInfo (getBgImageByLevel nextLevel) 0 }
 
 

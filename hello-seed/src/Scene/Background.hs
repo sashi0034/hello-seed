@@ -1,8 +1,10 @@
 module Scene.Background
   ( Background(..)
   , BgNextInfo(..)
-  , initialBackground) where
-import ImageRsc (ImageRsc (bg_a), ImageGetter)
+  , initialBackground
+  , getBgImageByLevel
+  ) where
+import ImageRsc (ImageRsc (bg_a, bg_b, bg_c, bg_d), ImageGetter)
 import Types (FrameCount)
 
 
@@ -23,3 +25,11 @@ initialBackground = Background
   , bgNextInfo = Nothing
   }
 
+
+getBgImageByLevel :: Int -> ImageGetter
+getBgImageByLevel level = case level `mod` 4 of
+  1 -> bg_a
+  2 -> bg_b
+  3 -> bg_c
+  0 -> bg_d
+  _ -> undefined
