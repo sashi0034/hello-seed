@@ -84,6 +84,7 @@ onPacmanEatEnemy s = let p = s^.player
     _ -> s
 
 
+-- 敵を全部倒した
 onDestroyAllEnemies :: Scene -> Scene
 onDestroyAllEnemies s =
   let mm = s^.meteorManager
