@@ -37,8 +37,8 @@ updateInfoUI s =
 updateFullnessInfo :: ( InfoUIUpdate s) => s -> UiFullness
 updateFullnessInfo s = let f = uiFullness $ s^.infoUI
   in case f of
-    UiFullCharging c ->
-      UiFullCharging $ c + 1
+    UiFullness c ->
+      UiFullness $ c + 1
 
 
 renderInfoUI :: ( MonadIO m ) => Scene -> m ()
@@ -134,14 +134,23 @@ renderFullness s =
       stuffed = logo_stuffed $ imageRsc $ s ^. env
 
       cx = fromIntegral $ getX $ (s ^. (metaInfo . screenSize)) `divVec` 2
-      width = 240
+      
       sy = 32
-      height = 64
 
   in case uiFull of
-    (UiFullCharging frame) -> do
+    (UiFullness frame) -> do
       let pf = s ^. (player . full)
-          fullRate = (fromIntegral (pf ^. currFull) / fromIntegral (pf ^. maxFull)) :: Float
+          isPacman = isPlayerPacman $ playerState $ s^.player
+          fullRate = if isPacman 
+            then 1
+            else (fromIntegral (pf ^. currFull) / fromIntegral (pf ^. maxFull)) :: Float
+          
+          amp = floor $ abs $ 4 * sin (degToRad $ 10 * frame)
+          
+          (width, height) = if isPacman
+            then (256 + amp * 2, 80) 
+            else (240, 64) 
+
           stuffedW = floor $ fromIntegral width * fullRate
 
       let sx1 = cx + stuffedW - (width `div` 2)
@@ -152,7 +161,6 @@ renderFullness s =
 
           lineY = sy + height + 4
           lineW = 5
-          amp = floor $ abs $ 4 * sin (degToRad $ 10 * frame)
 
       -- Hungry
       SDL.copy r hungry Nothing (Just (SDLWrapper.makeRect sx1 sy w1 height))

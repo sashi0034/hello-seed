@@ -2,7 +2,7 @@ module Scene.InfoUI
 ( InfoUI (..)
 , TextTexCache(..)
 , initialInfoUI
-, UiFullness(UiFullCharging)
+, UiFullness(UiFullness)
 ) where
 import Data.IORef (IORef, newIORef)
 import Rendering (RenderedText)
@@ -21,7 +21,7 @@ withNewTextTexCache op = do
     op $ TextTexCache surTex str
 
 
-data UiFullness = UiFullCharging FrameCount
+data UiFullness = UiFullness FrameCount
 
 
 data InfoUI = InfoUI
@@ -51,7 +51,7 @@ initialInfoUI op =
       , textGameOver = gameOver
       , textTitle = title
       , textTitlePas = titlePas
-      , uiFullness = UiFullCharging 0
+      , uiFullness = UiFullness 0
       }
 
 

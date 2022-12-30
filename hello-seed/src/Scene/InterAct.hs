@@ -57,6 +57,7 @@ onBecomePlayerPacman s =
     False -> s
     True -> s
       & player .~ ((s^.player) {playerState = Pacman 0} )
+      & player %~ (full . currFull) .~ 0
 
 
 -- パックマンで敵を食べた

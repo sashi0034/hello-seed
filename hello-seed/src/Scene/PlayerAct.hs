@@ -22,6 +22,7 @@ import qualified SDL.Primitive
 import Linear
 import Control.Lens
 import Ease
+import ConstParam
 
 
 
@@ -61,7 +62,9 @@ updatePlayerState mets p =
         then Normal
         else HitStopping 40 -- 当たった
 
-    Pacman fc -> Pacman $ fc + 1
+    Pacman fc -> if fc < ConstParam.playerPacmanTime 
+      then Pacman $ fc + 1
+      else Normal
 
     (HitStopping count) -> if count > 0
       then HitStopping $ count - 1
