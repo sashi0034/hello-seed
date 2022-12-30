@@ -5,6 +5,7 @@ module Scene.MeteorManager
 , initialMeteorManager
 , meteorCellSize
 , colRectMeteor
+, getMetGenAbleNext
 ) where
 import Vec (VecF, Vec (Vec), toVecF, (~-), (~*))
 import CollisionUtil
@@ -26,7 +27,11 @@ initialMeteorManager :: MeteorManager
 initialMeteorManager = MeteorManager 
   { metManagerElements = []
   , metManagerFrame = 0
-  , metManagerGenAble = 20 }
+  , metManagerGenAble = 10 }
+
+
+getMetGenAbleNext :: Int
+getMetGenAbleNext = 10
 
 
 meteorCellSize :: Vec Int

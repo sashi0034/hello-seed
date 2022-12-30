@@ -14,7 +14,10 @@ import Control.Monad          (void)
 data ImageRsc = ImageRsc
   { blobwob_24x24 :: SDL.Texture
   , tree_16x16 :: SDL.Texture
-  , blue_bg :: SDL.Texture
+  , bg_a :: SDL.Texture
+  , bg_b :: SDL.Texture
+  , bg_c :: SDL.Texture
+  , bg_d :: SDL.Texture
   , solid_rock_bud_16x16 :: SDL.Texture
   , mail_16x16 :: SDL.Texture
   , octocat_16x16 :: SDL.Texture
@@ -44,10 +47,19 @@ loadImageRsc r op =
   SDLWrapper.withTexture r "./assets/crying_laughing_16x16.png" $ \crying_laughing_16x16' -> 
 
   -- <a href="https://www.freepik.com/free-vector/blue-curve-background_16282276.htm#query=simple%20background&position=7&from_view=keyword">Image by rawpixel.com</a> on Freepik
-  --SDLWrapper.withTexture r "./assets/blue_bg.jpg" $ \blue_bg' -> 
+  --SDLWrapper.withTexture r "./assets/bg_a.jpg" $ \bg_a' -> 
 
   -- Image by <a href="https://www.freepik.com/free-vector/abstract-classic-blue-screensaver_6674908.htm#page=2&query=simple%20background&position=9&from_view=keyword">Freepik</a>
-  SDLWrapper.withTexture r "./assets/blue_bg_dark.jpg" $ \blue_bg' ->   
+  SDLWrapper.withTexture r "./assets/bg_a.jpg" $ \bg_a' ->   
+
+  -- https://pngtree.com/freebackground/abstract-background-design-green-abstract-background-design-line-art-background-design_1235685.html
+  SDLWrapper.withTexture r "./assets/bg_b.jpg" $ \bg_b' ->
+
+  -- https://www.vecteezy.com/vector-art/2915060-abstract-colorful-background
+  SDLWrapper.withTexture r "./assets/bg_c.jpg" $ \bg_c' ->
+
+  -- https://www.vecteezy.com/vector-art/1527263-purple-geometric-shapes-background
+  SDLWrapper.withTexture r "./assets/bg_d.jpg" $ \bg_d' ->
 
   SDLWrapper.withTexture r "./assets/logo_hungry.png" $ \logo_hungry' ->   
   SDLWrapper.withTexture r "./assets/logo_stuffed.png" $ \logo_stuffed' ->   
@@ -55,7 +67,10 @@ loadImageRsc r op =
     void $ op (ImageRsc 
       { blobwob_24x24 = blobwob_24x24'
       , tree_16x16 = tree_16x16'
-      , blue_bg = blue_bg'
+      , bg_a = bg_a'
+      , bg_b = bg_b'
+      , bg_c = bg_c'
+      , bg_d = bg_d'
       , solid_rock_bud_16x16 = solid_rock_bud_16x16'
       , mail_16x16 = mail_16x16'
       , octocat_16x16 = octocat_16x16'

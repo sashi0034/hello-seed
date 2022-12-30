@@ -62,6 +62,14 @@ infoUIAct = ActorAct
   (ActorRenderIO renderInfoUI)
 
 
+
+backgroundAct :: ActorAct
+backgroundAct = ActorAct
+  (ActorUpdate $ actUpdateScene background updateBackground)
+  (ActorActive (const True))
+  (ActorRenderIO renderBackground)
+
+  
 setupScene :: Scene -> Scene
 setupScene s =
   let acts =

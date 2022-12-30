@@ -1,6 +1,7 @@
 
 module Scene.BackgroundAct
-( backgroundAct
+( updateBackground
+, renderBackground
 ) where
 
 import Control.Monad.IO.Class
@@ -16,25 +17,29 @@ import Control.Lens
 
 
 
-backgroundAct :: ActorAct
-backgroundAct = ActorAct
-  (ActorUpdate updateBackground)
-  (ActorActive (const True))
-  (ActorRenderIO renderBackground)
-
-
-updateBackground :: Scene -> Scene
-updateBackground s = s & background .~ bg'
-  where
+updateBackground :: Scene -> Background
+updateBackground s =
+  let
     bg = s^.background
-    bg' = bg { animCount = 1 + animCount bg }
+
+    bg' = bg
+            { bgAnimCount = 1 + bgAnimCount bg
+            , bgNextInfo = Nothing
+            }
+  in
+    case bgNextInfo bg of
+      Nothing -> bg'
+      (Just (BgNextInfo image frame)) ->
+        bg' { bgCurrImage =  image
+            , bgNextInfo = Nothing}
 
 
 renderBackground :: (MonadIO m) => Scene -> m ()
 renderBackground s = do
-  let r = renderer $ s^.env
+  let bg = s^.background
+      r = renderer $ s^.env
       image = imageRsc $ s^.env
-      bgTexture = blue_bg image
+      bgTexture = bgCurrImage bg image
 
   bgTextureInfo <- queryTexture bgTexture
 
@@ -50,13 +55,13 @@ renderBackground s = do
 
   let src = SDLWrapper.makeRect srcX1 srcY1 srcX2 srcY2
 
-  SDL.copy r (blue_bg image) (Just src) (Just dest)
+  SDL.copy r (bg_a image) (Just src) (Just dest)
 
   where
     dest = SDLWrapper.makeRect 0 0 (fromIntegral $ getX size) (fromIntegral $ getY size)
     size = s^. (metaInfo . screenSize)
 
-    currPhase = (fromIntegral (animCount $ s ^. background) / 180) * pi :: Float
+    currPhase = (fromIntegral (bgAnimCount $ s ^. background) / 180) * pi :: Float
     maxAmp = 200 :: Float
     currAmp = maxAmp * sin currPhase
 

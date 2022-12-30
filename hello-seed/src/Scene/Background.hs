@@ -1,11 +1,25 @@
-module Scene.Background where
+module Scene.Background
+  ( Background(..)
+  , BgNextInfo(..)
+  , initialBackground) where
+import ImageRsc (ImageRsc (bg_a), ImageGetter)
+import Types (FrameCount)
+
+
+data BgNextInfo = BgNextInfo ImageGetter FrameCount
+
 
 data Background = Background
-  { animCount :: Int}
+  { bgAnimCount :: Int
+  , bgCurrImage :: ImageGetter 
+  , bgNextInfo :: Maybe BgNextInfo
+  }
 
 
 initialBackground :: Background
 initialBackground = Background
-  { animCount = 0
+  { bgAnimCount = 0
+  , bgCurrImage = bg_a
+  , bgNextInfo = Nothing
   }
 

@@ -16,6 +16,8 @@ import Scene.MeteorManager
 import CollisionUtil (hitRectRect)
 import Data.List
 import qualified Scene.MeteorManager as MeteorManager
+import Scene.Background (Background(bgNextInfo), BgNextInfo (BgNextInfo))
+import ImageRsc
 
 
 
@@ -31,7 +33,8 @@ updateCommunicator :: Scene -> Scene
 updateCommunicator s =
     onBecomePlayerPacman
   $ onCroppedHarvest
-  $ onPacmanEatEnemy s
+  $ onPacmanEatEnemy
+  $ onDestroyAllEnemies s
 
 
 -- トウモロコシが刈られたとき
@@ -70,12 +73,26 @@ onPacmanEatEnemy s = let p = s^.player
           (metEaten, metAlive) = partition
             (hitRectRect colPac . colRectMeteor) (metManagerElements mm)
           eatenEffs eaten = makeScrapEffect1
-            60 
+            60
             2
-            (MeteorManager.metPos eaten) 
+            (MeteorManager.metPos eaten)
             (SrcRect (Vec 0 0) meteorCellSize)
-            (metImage eaten) 
+            (metImage eaten)
       in s
         & meteorManager .~ mm { metManagerElements = metAlive}
         & effectObjects %~ (++ concatMap eatenEffs metEaten)
     _ -> s
+
+
+onDestroyAllEnemies :: Scene -> Scene
+onDestroyAllEnemies s =
+  let mm = s^.meteorManager
+  in case metManagerGenAble mm == 0 && null (metManagerElements mm)  of
+      False -> s
+      True ->
+        s
+          & meteorManager .~ mm { metManagerGenAble = getMetGenAbleNext }
+          & metaInfo %~ (playingRecord . currLevel) %~ (+1)
+          & background .~ (s^.background) { bgNextInfo = Just $ BgNextInfo bg_b 0 }
+
+
