@@ -27,7 +27,7 @@ initialMeteorManager :: MeteorManager
 initialMeteorManager = MeteorManager 
   { metManagerElements = []
   , metManagerFrame = 0
-  , metManagerGenAble = 10 }
+  , metManagerGenAble = 5 }
 
 
 getMetGenAbleNext :: Int

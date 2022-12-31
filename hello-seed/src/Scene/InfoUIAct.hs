@@ -148,7 +148,7 @@ renderFullness s =
           amp = floor $ abs $ 4 * sin (degToRad $ 10 * frame)
           
           (width, height) = if isPacman
-            then (256 + amp * 2, 80) 
+            then (288 + amp * 2, 112)
             else (240, 64) 
 
           stuffedW = floor $ fromIntegral width * fullRate

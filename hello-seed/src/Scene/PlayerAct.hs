@@ -153,7 +153,7 @@ renderPlayer s =
           orange = V4 255 196 24 255
           black = V4 80 64 48 255
           radius = floor
-            $ valueWithEaseBegin (backOut (Overshoot 5)) (RangeF 12 64) 20 frame
+            $ valueWithEaseBegin (backOut (Overshoot 10)) (RangeF 12 64) 20 frame
           borderWidth = 4
       -- 白フチ
       SDL.Primitive.fillPie r (convertVecInt V2 dest) (radius + borderWidth * 2) (arcStart - borderWidth) (arcEnd + borderWidth) white

@@ -73,7 +73,7 @@ birthOvalElem (CroppedHarvest pos) =
 --       (x0, y0) | x0 <- [-2 .. 2], y0 <- [-2 .. 2]]
 --   else []
 --   where
---     pos = installedPos harv
+--     pos = harvestPos harv
 
 checkBirthBlobElem :: Scene -> [EffectObject]
 checkBirthBlobElem s = case s^.metaInfo ^. sceneState of

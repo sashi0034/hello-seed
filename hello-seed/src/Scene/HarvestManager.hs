@@ -17,7 +17,7 @@ data CroppedHarvest = CroppedHarvest VecInt
 
 data Harvest = Harvest
   { animCount :: Int
-  , installedPos :: VecInt
+  , harvestPos :: VecInt
   , currState :: HarvestState
   }
 
@@ -42,7 +42,7 @@ initialHarvestManager screenSize = HarvestManager
 makeHarvestList :: Int -> Vec Int -> [Harvest]
 makeHarvestList level screenSize = map (\pos -> Harvest
     { animCount=0
-    , installedPos=pos
+    , harvestPos=pos
     , currState = Charging 0
     })
     $ execState (makeHarvestPosList level baseX baseY) []

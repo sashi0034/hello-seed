@@ -34,7 +34,7 @@ updateHarvestManager s =
   let hm = s^.harvestManager
       updated = map (runState (updateHarvest s)) (harvestList hm)
       croppedList = 
-        map (\(_, h) -> CroppedHarvest $ installedPos h) 
+        map (\(_, h) -> CroppedHarvest $ harvestPos h) 
         $ filter fst updated
       hm' = hm 
               { harvestList= map snd updated
@@ -73,7 +73,7 @@ updateHarvestByState s = do
           thisSize = toVecF harvestCellSize
           isReaped = hitRectRect
             (ColRect (Player.playerPos p ~- playerSize ~* 0.5) playerSize)
-            (ColRect (toVecF (installedPos h) ~- thisSize ~* 0.5) thisSize)
+            (ColRect (toVecF (harvestPos h) ~- thisSize ~* 0.5) thisSize)
           (nextState, cropped) = if isReaped && (playerState p == Player.Normal)
             then (Charging 0, True) -- 収穫成功
             else (Ripened, False) -- そのまま
@@ -84,7 +84,7 @@ updateHarvestByState s = do
 renderHarvest :: (MonadIO m) => Scene -> Harvest -> m()
 renderHarvest s h =
   let
-    pos = installedPos h
+    pos = harvestPos h
     r = Rendering.renderPixelartCentral (renderer $ s^.env) (corn_24x24 $ imageRsc $ s^.env)
     r' = Rendering.renderPixelart (renderer $ s^.env) (corn_24x24 $ imageRsc $ s^.env)
   in case currState h of

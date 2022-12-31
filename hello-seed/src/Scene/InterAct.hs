@@ -4,7 +4,7 @@
 module Scene.InterAct where
 import Scene.Scene
 import qualified Scene.HarvestManager as HarvestManager
-import Scene.HarvestManager (HarvestManager(croppedStack), Harvest, CroppedHarvest (CroppedHarvest))
+import Scene.HarvestManager (HarvestManager(croppedStack, harvestList), Harvest (harvestPos), CroppedHarvest (CroppedHarvest), makeHarvestList, harvestCellSize)
 import Control.Lens
 import Scene.EffectObject
 import Vec
@@ -93,9 +93,17 @@ onDestroyAllEnemies s =
       False -> s
       True ->
         let nextLevel = s^.metaInfo^.playingRecord^.currLevel + 1
+            scrapHarvs = concatMap (\h -> makeScrapEffect 0
+              60
+              2
+              (toVecF $ harvestPos h)
+              (SrcRect (Vec 0 0) harvestCellSize)
+              (corn_24x24)) (harvestList $ s^.harvestManager)
         in s
           & meteorManager .~ mm { metManagerGenAble = getMetGenAbleNext }
           & metaInfo %~ (playingRecord . currLevel) .~ nextLevel
           & background .~ (s^.background) { bgNextInfo = Just $ BgNextInfo (getBgImageByLevel nextLevel) 0 }
+          & harvestManager .~ (s^.harvestManager) { harvestList = makeHarvestList nextLevel (s ^. (metaInfo . screenSize)) }
+          & effectObjects %~ (++ scrapHarvs)
 
 
