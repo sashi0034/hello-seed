@@ -18,7 +18,9 @@ import System.Random
 import AnimUtil (calcAnimFrameIndex)
 import Control.Lens
 import qualified Scene.Player as Player
-import Scene.MeteorManager (Meteor(metImage))
+import Scene.MeteorManager
+import Control.Monad.State
+import Data.List (partition)
 
 
 
@@ -39,12 +41,9 @@ updateMeteorManager s = do
 
     newMeteorList <- checkPopNewMeteor s newFrameCount genAble
 
-    -- let updatedMeteorList =
-    --       filter (isInScreen $ s ^. (metaInfo . screenSize))
-    --       $ map (updateMeteor s)
-    --       $ metManagerElements mm ++ newMeteorList
-
-    updatedMeteorList <- mapM (updateMeteor s)
+    updatedMeteorList <-
+        (\list -> checkUpgradeMeteorList s <$> list)
+      $ mapM (updateMeteor s)
       $ metManagerElements mm ++ newMeteorList
 
     let mm' = mm
@@ -55,6 +54,40 @@ updateMeteorManager s = do
     --liftIO $ print $ length updatedMeteorList
 
     return mm'
+
+
+-- 数が少なくなってきたら個体のいくつかをパワーアップさせる
+checkUpgradeMeteorList :: (MeteorUpdate s) => s -> [Meteor] -> [Meteor]
+checkUpgradeMeteorList s met =
+  let lv = s^.metaInfo^.playingRecord^.currLevel
+      len = length met
+  in case lv of
+    1 -> if len < 5 then upgradeMeteorList 1 met else met
+    2 -> if len < 10 then upgradeMeteorList 2 met else met
+    3 -> if len < 20 then upgradeMeteorList 2 met
+         else if len < 10 then upgradeMeteorList 4 met
+         else met
+    4 -> if len < 20 then upgradeMeteorList 3 met
+         else if len < 10 then upgradeMeteorList 5 met
+         else met
+    _ -> if len < 30 then upgradeMeteorList 2 met
+         else if len < 20 then upgradeMeteorList 4 met
+         else if len < 10 then upgradeMeteorList 6 met
+         else met
+
+
+upgradeMeteorList :: Int -> [Meteor] -> [Meteor]
+upgradeMeteorList numUpgrade list =
+  let (upgraded, normals) = partition (\met -> metGrade met == MeteorGradeStrong) list
+      numNeedUpgrade = numUpgrade - length upgraded
+  in if numNeedUpgrade <= 0
+    then list
+    else
+      let (upgrading, nonUpgrade) = splitAt numNeedUpgrade normals
+      in upgraded
+        ++ map (\met -> met { metGrade = MeteorGradeStrong
+                            } ) upgrading
+        ++ nonUpgrade
 
 
 updateMeteor :: (MeteorUpdate s, MonadIO m) => s -> Meteor -> m Meteor
@@ -120,7 +153,7 @@ checkPopNewMeteor s count genAble
       { metPos = vecZero
       , metAnimCount = 0
       , metVelArg = 0
-      , metImage = octocat_16x16
+      , metGrade = MeteorGradeNormal
       }
 
     return $ take genAble [newMeteor]
@@ -149,10 +182,12 @@ renderMeteor :: MonadIO m => SDL.Renderer -> ImageRsc -> Meteor -> m ()
 renderMeteor r rsc meteor = do
   Rendering.renderPixelartCentral r (metImage meteor rsc) dest $ SrcRect src cellSize
   where
-    cellSize = meteorCellSize
+    cellSize = metCellSize meteor
     dest = toVecInt $ metPos meteor
     frameDuration = 10
-    numFrame = 6
+    numFrame = case metGrade meteor of
+      MeteorGradeNormal -> 6
+      MeteorGradeStrong -> 2
     srcX = getX cellSize * calcAnimFrameIndex numFrame frameDuration (metAnimCount meteor)
     src = Vec srcX 0
 

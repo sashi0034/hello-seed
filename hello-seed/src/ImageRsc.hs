@@ -24,6 +24,7 @@ data ImageRsc = ImageRsc
   , corn_24x24 :: SDL.Texture
   , oval_16x16 :: SDL.Texture
   , crying_laughing_16x16 :: SDL.Texture
+  , gorilla_24x24 :: SDL.Texture
   , logo_hungry :: SDL.Texture
   , logo_stuffed :: SDL.Texture
   }
@@ -45,6 +46,7 @@ loadImageRsc r op =
   SDLWrapper.withTexture r "./assets/corn_24x24.png" $ \corn_24x24' -> 
   SDLWrapper.withTexture r "./assets/oval_16x16.png" $ \oval_16x16' -> 
   SDLWrapper.withTexture r "./assets/crying_laughing_16x16.png" $ \crying_laughing_16x16' -> 
+  SDLWrapper.withTexture r "./assets/gorilla_24x24.png" $ \gorilla_24x24' -> 
 
   -- <a href="https://www.freepik.com/free-vector/blue-curve-background_16282276.htm#query=simple%20background&position=7&from_view=keyword">Image by rawpixel.com</a> on Freepik
   --SDLWrapper.withTexture r "./assets/bg_a.jpg" $ \bg_a' -> 
@@ -79,6 +81,7 @@ loadImageRsc r op =
       , crying_laughing_16x16 = crying_laughing_16x16'
       , logo_hungry = logo_hungry'
       , logo_stuffed = logo_stuffed'
+      , gorilla_24x24 = gorilla_24x24'
       })
 
 

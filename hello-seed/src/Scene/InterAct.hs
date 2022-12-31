@@ -76,7 +76,7 @@ onPacmanEatEnemy s = let p = s^.player
             60
             2
             (MeteorManager.metPos eaten)
-            (SrcRect (Vec 0 0) meteorCellSize)
+            (SrcRect (Vec 0 0) $ metCellSize eaten)
             (metImage eaten)
       in s
         & meteorManager .~ mm { metManagerElements = metAlive}
