@@ -11,7 +11,7 @@ import Control.Monad.IO.Class ( MonadIO(..) )
 import qualified SDL
 import ImageRsc
 import qualified Rendering
-import Vec (toVecInt, Vec (Vec), (~+), getY, getX, VecF, VecInt, vecZero)
+import Vec (toVecInt, Vec (Vec), (~+), getY, getX, VecF, VecInt, vecZero, vecFromRad, radOfVecF, (~-), (~*), normalize, sqrMagnitude)
 import Rendering (SrcRect(SrcRect))
 import Control.Monad
 import System.Random
@@ -21,6 +21,7 @@ import qualified Scene.Player as Player
 import Scene.MeteorManager
 import Control.Monad.State
 import Data.List (partition)
+import Scene.Player
 
 
 
@@ -59,20 +60,21 @@ updateMeteorManager s = do
 -- 数が少なくなってきたら個体のいくつかをパワーアップさせる
 checkUpgradeMeteorList :: (MeteorUpdate s) => s -> [Meteor] -> [Meteor]
 checkUpgradeMeteorList s met =
-  let lv = s^.metaInfo^.playingRecord^.currLevel
+  let mm = s^.meteorManager
+      lv = s^.metaInfo^.playingRecord^.currLevel
       len = length met
-  in case lv of
+  in if metManagerGenAble mm > 0 then met else case lv of
     1 -> if len < 5 then upgradeMeteorList 1 met else met
     2 -> if len < 10 then upgradeMeteorList 2 met else met
-    3 -> if len < 20 then upgradeMeteorList 2 met
-         else if len < 10 then upgradeMeteorList 4 met
+    3 -> if len < 20 then upgradeMeteorList 4 met
+         else if len < 10 then upgradeMeteorList 2 met
          else met
-    4 -> if len < 20 then upgradeMeteorList 3 met
-         else if len < 10 then upgradeMeteorList 5 met
+    4 -> if len < 20 then upgradeMeteorList 5 met
+         else if len < 10 then upgradeMeteorList 3 met
          else met
-    _ -> if len < 30 then upgradeMeteorList 2 met
-         else if len < 20 then upgradeMeteorList 4 met
-         else if len < 10 then upgradeMeteorList 6 met
+    _ -> if len < 30 then upgradeMeteorList 7 met
+         else if len < 20 then upgradeMeteorList 5 met
+         else if len < 10 then upgradeMeteorList 3 met
          else met
 
 
@@ -92,20 +94,26 @@ upgradeMeteorList numUpgrade list =
 
 updateMeteor :: (MeteorUpdate s, MonadIO m) => s -> Meteor -> m Meteor
 updateMeteor s meteor =
-  let newMet = meteor
+  let newAnimCount = 1 + metAnimCount meteor
+      newPos = metPos meteor ~+ metVel meteor
+      newMet = meteor
         { metPos = newPos
         , metAnimCount = newAnimCount
         }
-  in if isInScreen (s ^. (metaInfo . screenSize)) newMet
-      then return newMet
-      else locateMeteorRandom s meteor
-
-  where
-    newAnimCount = 1 + metAnimCount meteor
-    newPos = metPos meteor ~+ Vec velX velY
-    velArg = metVelArg meteor
-    velX = cos velArg
-    velY = sin velArg
+  in case metGrade meteor of
+    MeteorGradeNormal ->    
+      if isInScreen (s ^. (metaInfo . screenSize)) newMet
+        then return newMet
+        else locateMeteorRandom s meteor
+    MeteorGradeStrong ->
+      let speed = 0.1
+          maxVel = 2
+          newVel = metVel newMet 
+            ~+ vecFromRad (radOfVecF (playerPos (s^.player) ~- newPos)) ~* speed
+          newVel' = if sqrMagnitude newVel < maxVel * maxVel
+            then newVel
+            else normalize newVel ~* maxVel
+      in return newMet { metVel = newVel' }
 
 
 calcRandomStartPos :: Int -> VecInt -> IO VecF
@@ -152,7 +160,7 @@ checkPopNewMeteor s count genAble
     newMeteor <- locateMeteorRandom s Meteor
       { metPos = vecZero
       , metAnimCount = 0
-      , metVelArg = 0
+      , metVel = vecZero
       , metGrade = MeteorGradeNormal
       }
 
@@ -172,7 +180,7 @@ locateMeteorRandom s met = do
   randArg <- liftIO (randomRIO (-pi, pi) :: IO Float)
   return met
     { metPos = startPos
-    , metVelArg = randArg
+    , metVel = vecFromRad randArg
     }
   where
     screenSize' = s ^. (metaInfo . screenSize)

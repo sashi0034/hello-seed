@@ -23,7 +23,7 @@ data MeteorGrade =
 data Meteor = Meteor
   { metPos :: VecF
   , metAnimCount :: Int
-  , metVelArg :: Float
+  , metVel :: VecF
   , metGrade :: MeteorGrade }
 
 data MeteorManager = MeteorManager
