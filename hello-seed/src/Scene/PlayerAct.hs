@@ -62,7 +62,7 @@ updatePlayerState mets p =
         then Normal
         else HitStopping 40 -- 当たった
 
-    Pacman fc -> if fc < ConstParam.playerPacmanTime 
+    Pacman fc -> if fc < ConstParam.playerPacmanTime
       then Pacman $ fc + 1
       else Normal
 
@@ -143,10 +143,15 @@ renderPlayer s =
           halfArc = openingMargin + halfArcBase / 2 + (halfArcBase / 2) * sin (animSpeed * (pi / 180) * fromIntegral (animCount p))
           arcStart = floor $ ang + halfArc
           arcEnd =  floor $ ang - halfArc
+          
+          isFlashing = (frame > ConstParam.playerPacmanTime - 90) && frame `mod` 12 < 6
           yellow = V4 255 220 40 255
+          (bodyColor, white) = if not isFlashing
+            then (yellow, V4 255 244 220 255)
+            -- パックマン終了前には点滅する
+            else (V4 255 240 120 255, V4 255 244 220 64)
           orange = V4 255 196 24 255
           black = V4 80 64 48 255
-          white = V4 255 244 220 255
           radius = floor
             $ valueWithEaseBegin (backOut (Overshoot 5)) (RangeF 12 64) 20 frame
           borderWidth = 4
@@ -157,7 +162,7 @@ renderPlayer s =
       -- 中身フチ
       SDL.Primitive.fillPie r (convertVecInt V2 dest) radius (arcStart + borderWidth) (arcEnd - borderWidth) orange
       -- 中身
-      SDL.Primitive.fillPie r (convertVecInt V2 dest) (radius - borderWidth) (arcStart + borderWidth) (arcEnd - borderWidth) yellow
+      SDL.Primitive.fillPie r (convertVecInt V2 dest) (radius - borderWidth) (arcStart + borderWidth) (arcEnd - borderWidth) bodyColor
 
     -- 普通のblobwob
     _ -> Rendering.renderPixelartCentral r (blobwob_24x24 rsc) dest $ SrcRect src cellSize
