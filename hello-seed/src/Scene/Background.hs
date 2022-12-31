@@ -6,6 +6,7 @@ module Scene.Background
   ) where
 import ImageRsc (ImageRsc (bg_a, bg_b, bg_c, bg_d), ImageGetter)
 import Types (FrameCount)
+import qualified ConstParam
 
 
 data BgNextInfo = BgNextInfo ImageGetter FrameCount
@@ -21,7 +22,7 @@ data Background = Background
 initialBackground :: Background
 initialBackground = Background
   { bgAnimCount = 0
-  , bgCurrImage = bg_a
+  , bgCurrImage = getBgImageByLevel ConstParam.initialLevel
   , bgNextInfo = Nothing
   }
 

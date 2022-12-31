@@ -20,6 +20,7 @@ import ImageRsc
 import FontRsc
 import InputState
 import Control.Lens
+import qualified ConstParam
 
 
 data SceneState = Title | Playing deriving (Eq)
@@ -164,7 +165,7 @@ initPlaying :: Scene -> Scene
 initPlaying s =
   let size = s ^. (metaInfo . screenSize)
       pr = s ^. (metaInfo . playingRecord)
-      pr' = pr& currScore.~0 & currLevel.~1
+      pr' = pr& currScore.~0 & currLevel.~ConstParam.initialLevel
   in s
   { _sceneMetaInfo = (s^.metaInfo) {_playingRecord = pr'}
   , _scenePlayer = initialPlayer size

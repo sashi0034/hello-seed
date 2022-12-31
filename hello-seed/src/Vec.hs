@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 
 module Vec where
 
@@ -65,6 +66,20 @@ radOfVecF (Vec x y) = atan2 y x
 
 degOfVecF :: VecF -> Float
 degOfVecF v = 180 * radOfVecF v / pi
+
+
+vecFromRad :: Float -> VecF
+vecFromRad rad = Vec (cos rad) (sin rad)
+
+
+class VecFromDeg a where
+  vecFromDeg :: a -> VecF
+instance VecFromDeg Int where
+  vecFromDeg :: Int -> VecF
+  vecFromDeg deg = vecFromRad ((fromIntegral deg / 180) * pi)
+instance VecFromDeg Float where
+  vecFromDeg :: Float -> VecF
+  vecFromDeg deg = vecFromRad (deg / (180 :: Float) * pi)
 
 
 vecZero :: (Num a) => Vec a
