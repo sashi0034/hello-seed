@@ -180,11 +180,12 @@ locateMeteorRandom s met = do
   randArg <- liftIO (randomRIO (-pi, pi) :: IO Float)
   return met
     { metPos = startPos
-    , metVel = vecFromRad randArg
+    , metVel = vecFromRad randArg ~* speed
     }
   where
     screenSize' = s ^. (metaInfo . screenSize)
-
+    lv = s^.metaInfo^.playingRecord^.currLevel
+    speed = 1.0 + (fromIntegral lv - 1) / 10
 
 renderMeteor :: MonadIO m => SDL.Renderer -> ImageRsc -> Meteor -> m ()
 renderMeteor r rsc meteor = do

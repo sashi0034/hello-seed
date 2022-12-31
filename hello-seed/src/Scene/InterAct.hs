@@ -100,7 +100,7 @@ onDestroyAllEnemies s =
               (SrcRect (Vec 0 0) harvestCellSize)
               (corn_24x24)) (harvestList $ s^.harvestManager)
         in s
-          & meteorManager .~ mm { metManagerGenAble = getMetGenAbleNext }
+          & meteorManager .~ mm { metManagerGenAble = getMetGenAbleNext nextLevel }
           & metaInfo %~ (playingRecord . currLevel) .~ nextLevel
           & background .~ (s^.background) { bgNextInfo = Just $ BgNextInfo (getBgImageByLevel nextLevel) 0 }
           & harvestManager .~ (s^.harvestManager) { harvestList = makeHarvestList nextLevel (s ^. (metaInfo . screenSize)) }

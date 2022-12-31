@@ -12,6 +12,7 @@ module Scene.MeteorManager
 import Vec (VecF, Vec (Vec), toVecF, (~-), (~*), VecInt)
 import CollisionUtil
 import ImageRsc (ImageGetter, ImageRsc (octocat_16x16, gorilla_24x24))
+import qualified ConstParam
 
 
 data MeteorGrade = 
@@ -47,11 +48,16 @@ initialMeteorManager :: MeteorManager
 initialMeteorManager = MeteorManager 
   { metManagerElements = []
   , metManagerFrame = 0
-  , metManagerGenAble = 15 }
+  , metManagerGenAble = getMetGenAbleNext ConstParam.initialLevel }
 
 
-getMetGenAbleNext :: Int
-getMetGenAbleNext = 10
+getMetGenAbleNext :: Int -> Int
+getMetGenAbleNext nextLv = case nextLv of
+  1 -> 20
+  2 -> 60
+  3 -> 100
+  4 -> 150
+  _ -> 200
 
 
 colRectMeteor :: Meteor -> ColRect
