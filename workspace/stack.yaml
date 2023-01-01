@@ -3,9 +3,13 @@ resolver: lts-18.28
 
 packages:
   - ../hello-seed
+  - ../sdl2-ttf
+  - ../sdl2-gfx
 
 extra-deps: 
   - ease-0.1.0.2@sha256:03f620cd1f2347823d46168419c39a570ed555b67edd48294d07ebe723c02388,899
+  - git: https://github.com/haskell-game/sdl2-image.git
+    commit: 382395c763b473032721c71921b5c9241142178f
 
 flags: {}
 
