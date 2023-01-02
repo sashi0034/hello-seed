@@ -1,0 +1,22 @@
+language: haskell
+
+sudo: required
+
+env:
+  - GHCVER=8.0.2 CABALVER=3.0 HAPPYVER=1.19.5 LD_LIBRARY_PATH=/usr/local/lib
+
+before_install:
+  - cd ..
+  - travis_retry sudo add-apt-repository -y ppa:hvr/ghc
+  - travis_retry sudo apt-get update
+  - travis_retry sudo apt-get install cabal-install-$CABALVER ghc-$GHCVER happy-$HAPPYVER libsdl2-dev libsdl2-ttf-dev
+  - export CABAL=/opt/cabal/bin/cabal-$CABALVER
+  - export PATH=/opt/ghc/$GHCVER/bin:$PATH
+  - rm -rf ~/.cabal
+  - $CABAL update
+
+install:
+  - cd sdl2-ttf
+
+script:
+  - $CABAL v1-install --flags="example"

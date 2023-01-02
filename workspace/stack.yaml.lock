@@ -7,13 +7,24 @@ packages:
 - completed:
     hackage: ease-0.1.0.2@sha256:03f620cd1f2347823d46168419c39a570ed555b67edd48294d07ebe723c02388,899
     pantry-tree:
-      size: 246
       sha256: 80f99916b296960ec0f479533b2b286c01afd422ef4d0e1a9a06c314769002b4
+      size: 246
   original:
     hackage: ease-0.1.0.2@sha256:03f620cd1f2347823d46168419c39a570ed555b67edd48294d07ebe723c02388,899
+- completed:
+    commit: 382395c763b473032721c71921b5c9241142178f
+    git: https://github.com/haskell-game/sdl2-image.git
+    name: sdl2-image
+    pantry-tree:
+      sha256: 3f8d686c74dd577de885ef34703859efb2a8d543183ba1ccb71b77868cc052f9
+      size: 545
+    version: 2.0.0
+  original:
+    commit: 382395c763b473032721c71921b5c9241142178f
+    git: https://github.com/haskell-game/sdl2-image.git
 snapshots:
 - completed:
+    sha256: 428ec8d5ce932190d3cbe266b9eb3c175cd81e984babf876b64019e2cbe4ea68
     size: 590100
     url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/28.yaml
-    sha256: 428ec8d5ce932190d3cbe266b9eb3c175cd81e984babf876b64019e2cbe4ea68
   original: lts-18.28
