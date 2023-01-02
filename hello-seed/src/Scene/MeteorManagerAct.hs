@@ -43,9 +43,9 @@ updateMeteorManager s = do
     newMeteorList <- checkPopNewMeteor s newFrameCount genAble
 
     updatedMeteorList <-
-        (\list -> checkUpgradeMeteorList s <$> list)
-      $ mapM (updateMeteor s)
-      $ metManagerElements mm ++ newMeteorList
+      checkUpgradeMeteorList s <$>
+      mapM (updateMeteor s) 
+      (metManagerElements mm ++ newMeteorList)
 
     let mm' = mm
           { metManagerFrame = newFrameCount
@@ -101,14 +101,14 @@ updateMeteor s meteor =
         , metAnimCount = newAnimCount
         }
   in case metGrade meteor of
-    MeteorGradeNormal ->    
+    MeteorGradeNormal ->
       if isInScreen (s ^. (metaInfo . screenSize)) newMet
         then return newMet
         else locateMeteorRandom s meteor
     MeteorGradeStrong ->
       let speed = 0.1
           maxVel = 2
-          newVel = metVel newMet 
+          newVel = metVel newMet
             ~+ vecFromRad (radOfVecF (playerPos (s^.player) ~- newPos)) ~* speed
           newVel' = if sqrMagnitude newVel < maxVel * maxVel
             then newVel
