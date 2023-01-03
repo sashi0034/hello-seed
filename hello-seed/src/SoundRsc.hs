@@ -12,13 +12,9 @@ data SoundRsc =SoundRsc
   , player_damaged :: Chunk
   , pacman_become :: Chunk
   , game_over :: Chunk
-  , levelup :: Chunk
+  , level_up :: Chunk
   , pacman_blink :: Chunk
   }
-
-
-playSe :: (MonadIO m) => SDL.Mixer.Chunk -> m()
-playSe = SDL.Mixer.play
 
 
 withSoundRsc :: (MonadIO m) => (SoundRsc -> m a) -> m()
@@ -29,7 +25,7 @@ withSoundRsc op =
   SDLWrapper.withChunk "./assets/sounds/player_damaged.mp3" $ \player_damaged' ->
   SDLWrapper.withChunk "./assets/sounds/pacman_become.mp3" $ \pacman_become' ->
   SDLWrapper.withChunk "./assets/sounds/game_over.mp3" $ \game_over' ->
-  SDLWrapper.withChunk "./assets/sounds/levelup.mp3" $ \levelup' ->
+  SDLWrapper.withChunk "./assets/sounds/level_up.mp3" $ \level_up' ->
   SDLWrapper.withChunk "./assets/sounds/pacman_blink.mp3" $ \pacman_blink' -> do
   
     void $ op (SoundRsc
@@ -39,7 +35,7 @@ withSoundRsc op =
       , player_damaged = player_damaged'
       , pacman_become = pacman_become'
       , game_over = game_over'
-      , levelup = levelup'
+      , level_up = level_up'
       , pacman_blink = pacman_blink'
       })
 

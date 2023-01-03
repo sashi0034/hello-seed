@@ -23,6 +23,10 @@ import Linear
 import Control.Lens
 import Ease
 import ConstParam
+import Control.Monad.IO.Class
+import Control.Monad
+import SoundRsc (SoundRsc(pacman_blink, player_damaged, game_over))
+import qualified Types
 
 
 
@@ -30,7 +34,7 @@ import ConstParam
 updatePlayer ::
   ( HasPlayer s Player
   , HasMeteorManager s MeteorManager
-  , HasEnv s Environment) => s -> Player
+  , HasEnv s Environment) => (MonadIO m) => s -> m Player
 updatePlayer s =
   let p = s^.player
       meteors = MeteorManager.metManagerElements $ s^.meteorManager
@@ -50,8 +54,23 @@ updatePlayer s =
               , playerAngDeg = angDeg
              }
 
-  in p'
+  in do
+    -- 音を鳴らす
+    case newState of
+      (Pacman frame) -> 
+        let temp = frame `mod` 90
+        in when (temp == 0 || temp == 30) (playSe s pacman_blink)
+      (HitStopping frame) ->
+        when (frame == hitStoppingStartTime) (playSe s player_damaged)
+      (Dead frame) ->
+        when (frame == 0) (playSe s game_over)
+      _ -> return ()
 
+    return p'
+
+
+hitStoppingStartTime :: Types.LeftFrame
+hitStoppingStartTime = 40
 
 
 updatePlayerState :: [Meteor] -> Player -> PlayerState
@@ -60,7 +79,8 @@ updatePlayerState mets p =
     Normal ->
       if not $ isHitWithMeteorList p mets
         then Normal
-        else HitStopping 40 -- 当たった
+         -- 当たった
+        else HitStopping hitStoppingStartTime
 
     Pacman fc -> if fc < ConstParam.playerPacmanTime
       then Pacman $ fc + 1

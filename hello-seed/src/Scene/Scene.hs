@@ -22,6 +22,7 @@ import InputState
 import Control.Lens
 import qualified ConstParam
 import SoundRsc (SoundRsc)
+import qualified SDL.Mixer
 
 
 data SceneState = Title | Playing deriving (Eq)
@@ -193,3 +194,9 @@ isHitStopping s =
   in case ps of
       HitStopping _ -> True
       _ -> False
+
+
+playSe :: (HasEnv s Environment, MonadIO m) => s -> (SoundRsc -> SDL.Mixer.Chunk) -> m()
+playSe s se = 
+  SDL.Mixer.play $ se (soundRsc $ s^.env)
+

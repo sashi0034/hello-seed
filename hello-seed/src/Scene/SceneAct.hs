@@ -21,7 +21,7 @@ import Data.Foldable (foldlM)
 import Control.Monad
 import Control.Lens
 import Scene.InterAct
-import SoundRsc (SoundRsc(game_start), playSe)
+import SoundRsc (SoundRsc(game_start))
 
 
 
@@ -37,7 +37,7 @@ actUpdateSceneIO l func s = do
 
 playerAct :: ActorAct
 playerAct = ActorAct
-  (ActorUpdate $ actUpdateScene player updatePlayer)
+  (ActorUpdateIO $ actUpdateSceneIO player updatePlayer)
   (ActorActive $ isSceneState Playing)
   (ActorRenderIO renderPlayer)
 
@@ -105,7 +105,7 @@ checkShiftScene s = let meta = s^.metaInfo in
           isClicked = butt SDL.ButtonLeft
       in if isClicked
         then do
-          playSe (game_start $ soundRsc $ s^.env)
+          playSe s game_start
           return $ initPlaying $ s & metaInfo .~ (meta & sceneState .~ Playing)
         else return s
     Playing ->

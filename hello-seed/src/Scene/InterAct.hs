@@ -1,5 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use if" #-}
+{-# HLINT ignore "Use <&>" #-}
+{-# HLINT ignore "Monad law, left identity" #-}
 
 module Scene.InterAct where
 import Scene.Scene
@@ -18,53 +20,60 @@ import Data.List
 import qualified Scene.MeteorManager as MeteorManager
 import Scene.Background (Background(bgNextInfo), BgNextInfo (BgNextInfo), getBgImageByLevel)
 import ImageRsc
+import Control.Monad.IO.Class
+import Control.Monad (when, unless)
+import SoundRsc (SoundRsc(eat_enemy, eat_harvest, pacman_become, level_up))
 
 
 
 
 interAct :: ActorAct
 interAct = ActorAct
-  (ActorUpdate updateCommunicator)
+  (ActorUpdateIO updateCommunicator)
   (ActorActive $ const True)
   ActorRenderNone
 
 
-updateCommunicator :: Scene -> Scene
+updateCommunicator :: (MonadIO m) => Scene -> m Scene
 updateCommunicator s =
-    onBecomePlayerPacman
-  $ onCroppedHarvest
-  $ onPacmanEatEnemy
-  $ onDestroyAllEnemies s
+      return s
+  >>= onBecomePlayerPacman
+  >>= onPacmanEatEnemy
+  >>= onDestroyAllEnemies
+  >>= onCroppedHarvest
 
 
 -- トウモロコシが刈られたとき
-onCroppedHarvest :: Scene -> Scene
+onCroppedHarvest :: (MonadIO m) => Scene -> m Scene
 onCroppedHarvest s =
   let hm = s ^. harvestManager
       cropped = HarvestManager.croppedStack hm
       len = length cropped
 
       effects = foldr (\c e -> e ++ birthOvalElem c) [] cropped
-
-  in s
-    & harvestManager .~ hm { croppedStack = [] }
-    & player %~ full %~ (`incFullness` len)
-    & effectObjects %~ (++ effects)
+  in do
+    when (len > 0) (playSe s eat_harvest)
+    return $ s
+      & harvestManager .~ hm { croppedStack = [] }
+      & player %~ full %~ (`incFullness` len)
+      & effectObjects %~ (++ effects)
     -- & metaInfo %~ (playingRecord . currScore) %~ (+ len)
 
 
 -- パックマンになる
-onBecomePlayerPacman :: Scene -> Scene
+onBecomePlayerPacman :: (MonadIO m) => Scene -> m Scene
 onBecomePlayerPacman s =
   case canBecomePacman $ s^.player of
-    False -> s
-    True -> s
-      & player .~ ((s^.player) {playerState = Pacman 0} )
-      & player %~ (full . currFull) .~ 0
+    False -> return s
+    True -> do
+      playSe s pacman_become
+      return $ s
+        & player .~ ((s^.player) {playerState = Pacman 0} )
+        & player %~ (full . currFull) .~ 0
 
 
 -- パックマンで敵を食べた
-onPacmanEatEnemy :: Scene -> Scene
+onPacmanEatEnemy :: (MonadIO m) => Scene -> m Scene
 onPacmanEatEnemy s = let p = s^.player
   in case playerState p of
     Pacman frame ->
@@ -78,19 +87,21 @@ onPacmanEatEnemy s = let p = s^.player
             (MeteorManager.metPos eaten)
             (SrcRect (Vec 0 0) $ metCellSize eaten)
             (metImage eaten)
-      in s
-        & meteorManager .~ mm { metManagerElements = metAlive}
-        & effectObjects %~ (++ concatMap eatenEffs metEaten)
-        & metaInfo %~ (playingRecord . currScore) %~ (+ length metEaten)
-    _ -> s
+      in do
+        unless (null metEaten) (playSe s eat_enemy)
+        return $ s
+          & meteorManager .~ mm { metManagerElements = metAlive}
+          & effectObjects %~ (++ concatMap eatenEffs metEaten)
+          & metaInfo %~ (playingRecord . currScore) %~ (+ length metEaten)
+    _ -> return s
 
 
 -- 敵を全部倒した
-onDestroyAllEnemies :: Scene -> Scene
+onDestroyAllEnemies :: (MonadIO m) => Scene -> m Scene
 onDestroyAllEnemies s =
   let mm = s^.meteorManager
   in case metManagerGenAble mm == 0 && null (metManagerElements mm)  of
-      False -> s
+      False -> return s
       True ->
         let nextLevel = s^.metaInfo^.playingRecord^.currLevel + 1
             scrapHarvs = concatMap (\h -> makeScrapEffect 0
@@ -99,11 +110,13 @@ onDestroyAllEnemies s =
               (toVecF $ harvestPos h)
               (SrcRect (Vec 0 0) harvestCellSize)
               (corn_24x24)) (harvestList $ s^.harvestManager)
-        in s
-          & meteorManager .~ mm { metManagerGenAble = getMetGenAbleNext nextLevel }
-          & metaInfo %~ (playingRecord . currLevel) .~ nextLevel
-          & background .~ (s^.background) { bgNextInfo = Just $ BgNextInfo (getBgImageByLevel nextLevel) 0 }
-          & harvestManager .~ (s^.harvestManager) { harvestList = makeHarvestList nextLevel (s ^. (metaInfo . screenSize)) }
-          & effectObjects %~ (++ scrapHarvs)
+        in do
+          playSe s level_up
+          return $ s
+            & meteorManager .~ mm { metManagerGenAble = getMetGenAbleNext nextLevel }
+            & metaInfo %~ (playingRecord . currLevel) .~ nextLevel
+            & background .~ (s^.background) { bgNextInfo = Just $ BgNextInfo (getBgImageByLevel nextLevel) 0 }
+            & harvestManager .~ (s^.harvestManager) { harvestList = makeHarvestList nextLevel (s ^. (metaInfo . screenSize)) }
+            & effectObjects %~ (++ scrapHarvs)
 
 
