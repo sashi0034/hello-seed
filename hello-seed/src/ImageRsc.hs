@@ -36,8 +36,8 @@ data ImageRenderer = ImageRenderer ImageRsc SDL.Renderer
 type ImageGetter = (ImageRsc -> SDL.Texture)
 
 
-loadImageRsc :: (MonadIO m) => SDL.Renderer -> (ImageRsc -> m a) -> m ()
-loadImageRsc r op = 
+withImageRsc :: (MonadIO m) => SDL.Renderer -> (ImageRsc -> m a) -> m ()
+withImageRsc r op = 
   SDLWrapper.withTexture r "./assets/images/blobwob_24x24.png" $ \blobwob_24x24' -> 
   SDLWrapper.withTexture r "./assets/images/tree_16x16.png" $ \tree_16x16' -> 
   SDLWrapper.withTexture r "./assets/images/solid_rock_bud_16x16.png" $ \solid_rock_bud_16x16' ->   

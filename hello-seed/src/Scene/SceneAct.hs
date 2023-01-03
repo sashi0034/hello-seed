@@ -21,6 +21,7 @@ import Data.Foldable (foldlM)
 import Control.Monad
 import Control.Lens
 import Scene.InterAct
+import SoundRsc (SoundRsc(game_start), playSe)
 
 
 
@@ -96,20 +97,22 @@ refreshScene s = do
   return s'
 
 
-checkShiftScene :: Scene -> Scene
+checkShiftScene :: (MonadIO m) => Scene -> m Scene
 checkShiftScene s = let meta = s^.metaInfo in
   case meta^.sceneState of
     Title ->
       let butt = mouseButton $ mouse $ input $ s^.env
           isClicked = butt SDL.ButtonLeft
       in if isClicked
-        then initPlaying $ s & metaInfo .~ (meta & sceneState .~ Playing)
-        else s
+        then do
+          playSe (game_start $ soundRsc $ s^.env)
+          return $ initPlaying $ s & metaInfo .~ (meta & sceneState .~ Playing)
+        else return s
     Playing ->
       let isContinued = countAfterDiedPlayer (playerState $ s^.player) < baseFps * 3
       in if isContinued
-        then s
-        else s {_sceneMetaInfo = meta & sceneState .~ Title}
+        then return s
+        else return $ s {_sceneMetaInfo = meta & sceneState .~ Title}
 
 
 updatePlayingRecord :: Scene -> PlayingRecord
@@ -121,12 +124,12 @@ updatePlayingRecord s =
 
 sceneMetaAct :: ActorAct
 sceneMetaAct = ActorAct
-  (ActorUpdate updateSceneMeta )
+  (ActorUpdateIO updateSceneMeta )
   (ActorActive $ const True)
   ActorRenderNone
 
 
-updateSceneMeta :: Scene -> Scene
+updateSceneMeta :: (MonadIO m) => Scene -> m Scene
 updateSceneMeta s =
   let meta = s^.metaInfo
       nextFrame = meta^.sceneFrame + 1
@@ -134,5 +137,5 @@ updateSceneMeta s =
         & sceneFrame .~ nextFrame
         & playingRecord .~ updatePlayingRecord s
       s1 = s & metaInfo .~ meta'
-      s' = checkShiftScene s1
-  in s'
+  in do
+    checkShiftScene s1

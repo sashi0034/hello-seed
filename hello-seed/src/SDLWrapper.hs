@@ -3,10 +3,12 @@ module SDLWrapper where
 import qualified SDL
 import qualified SDL.Image
 import qualified SDL.Font
+import qualified SDL.Mixer
 
 import Control.Monad          (void)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Text              (Text)
+import Data.Default.Class     (def)
 
 import SDL (($=))
 import qualified GHC.IO as SDL
@@ -20,7 +22,7 @@ data SurTex = SurTex (Maybe SDL.Surface) (Maybe SDL.Texture)
 
 withSDL :: (MonadIO m) => m a -> m ()
 withSDL op = do
-  SDL.initialize []
+  SDL.initialize [SDL.InitVideo, SDL.InitAudio]
   void op
   SDL.quit
 
@@ -37,6 +39,17 @@ withSDLFont op = do
   SDL.Font.initialize
   void op
   SDL.Font.quit
+
+
+withSDLMixer :: (MonadIO m) => m a -> m ()
+withSDLMixer op = do
+  SDL.Mixer.initialize [SDL.Mixer.InitMP3]
+  SDL.Mixer.openAudio def 256
+
+  void op
+
+  SDL.Mixer.closeAudio
+  SDL.Mixer.quit
 
 
 withWindow :: (MonadIO m) => Text -> (Int, Int) -> (SDL.Window -> m a) -> m ()
@@ -56,6 +69,13 @@ withRenderer w op = do
   r <- SDL.createRenderer w (-1) rendererConfig
   void $ op r
   SDL.destroyRenderer r
+
+
+withChunk :: (MonadIO m) => FilePath -> (SDL.Mixer.Chunk -> m a) -> m()
+withChunk filePath op = do
+  c <- SDL.Mixer.load filePath
+  void $ op c
+  SDL.Mixer.free c
 
 
 withTexture :: (MonadIO m) => SDL.Renderer -> SDL.FilePath -> (SDL.Texture -> m a) -> m ()

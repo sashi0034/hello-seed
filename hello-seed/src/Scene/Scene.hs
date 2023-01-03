@@ -21,6 +21,7 @@ import FontRsc
 import InputState
 import Control.Lens
 import qualified ConstParam
+import SoundRsc (SoundRsc)
 
 
 data SceneState = Title | Playing deriving (Eq)
@@ -45,6 +46,7 @@ data Environment = Environment
   , renderer :: SDL.Renderer
   , imageRsc :: ImageRsc
   , fontRsc :: FontRsc
+  , soundRsc :: SoundRsc
   , windowSize :: VecInt
   , input :: InputState
   }
@@ -102,14 +104,15 @@ makeFields ''Scene
 -- などが生成される
 
 
-initialEnv :: SDL.Window -> SDL.Renderer -> ImageRsc -> FontRsc -> VecInt -> Environment
-initialEnv window' renderer' imageRsc' fontRsc' windowSize' = Environment
+initialEnv :: SDL.Window -> SDL.Renderer -> ImageRsc -> FontRsc -> SoundRsc -> VecInt -> Environment
+initialEnv window' renderer' imageRsc' fontRsc' soundRsc' windowSize' = Environment
   { exiting = False
   , currentBaseFps = baseFps
   , window = window'
   , renderer = renderer'
   , imageRsc = imageRsc'
   , fontRsc = fontRsc'
+  , soundRsc = soundRsc'
   , windowSize = windowSize'
   , input = noInput
   }

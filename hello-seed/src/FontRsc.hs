@@ -13,8 +13,8 @@ data FontRsc = FontRsc
   , outlinedMplus96 :: FontOutlined
   }
 
-loadFontRsc :: (MonadIO m) => (FontRsc -> m a) -> m()
-loadFontRsc op =
+withFontRsc :: (MonadIO m) => (FontRsc -> m a) -> m()
+withFontRsc op =
   SDLWrapper.withFont "./assets/Mplus2-Regular.ttf" 24 $ \mplus24' ->
   withFontOutlined "./assets/Mplus2-Regular.ttf" 24 2 $ \outlinedMplus24' ->
   withFontOutlined "./assets/Mplus2-Regular.ttf" 96 4 $ \outlinedMplus96' -> 

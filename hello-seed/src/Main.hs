@@ -24,20 +24,26 @@ import qualified Scene.Scene as Scene
 import Scene.Scene
 import Scene.SceneAct (setupScene)
 import Control.Lens
+import SoundRsc (SoundRsc(SoundRsc), withSoundRsc)
 
 
 
 main :: IO ()
-main = SDLWrapper.withSDL $ SDLWrapper.withSDLImage $ SDLWrapper.withSDLFont $ do
+main = 
+  SDLWrapper.withSDL $ 
+  SDLWrapper.withSDLImage $ 
+  SDLWrapper.withSDLFont $ 
+  SDLWrapper.withSDLMixer $ do
   SDLWrapper.setHintQuality
   let initialWindowSize = Vec 1280 (720 :: Int)
 
   SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w ->
     SDLWrapper.withRenderer w $ \r ->
-    ImageRsc.loadImageRsc r $ \imageRsc' ->
-    ImageRsc.loadFontRsc $ \fontRsc' ->
+    ImageRsc.withImageRsc r $ \imageRsc' ->
+    ImageRsc.withFontRsc $ \fontRsc' ->
+    SoundRsc.withSoundRsc $ \soundRsc' ->
     Scene.withScene
-        (Scene.initialEnv w r imageRsc' fontRsc' initialWindowSize)
+        (Scene.initialEnv w r imageRsc' fontRsc' soundRsc' initialWindowSize)
         initialWindowSize
       $ \s -> do
 
