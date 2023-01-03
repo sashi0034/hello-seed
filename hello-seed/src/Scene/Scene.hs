@@ -197,6 +197,15 @@ isHitStopping s =
 
 
 playSe :: (HasEnv s Environment, MonadIO m) => s -> (SoundRsc -> SDL.Mixer.Chunk) -> m()
-playSe s se = 
-  SDL.Mixer.play $ se (soundRsc $ s^.env)
+playSe s se = do
+  chanFree <- SDL.Mixer.getAvailable SDL.Mixer.DefaultGroup
+  case chanFree of
+    (Just _) -> SDL.Mixer.play $ se (soundRsc $ s^.env)
+    Nothing -> do
+      chanOld <- SDL.Mixer.getOldest SDL.Mixer.DefaultGroup
+      case chanOld of
+        Nothing -> return ()
+        (Just chan) -> 
+          void $ SDL.Mixer.playOn chan 1 $ se (soundRsc $ s^.env)
+  
 
