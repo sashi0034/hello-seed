@@ -15,7 +15,7 @@ import Data.StateVar
 import ImageRsc
 import InputState ( readInput, InputState(intents) )
 import qualified Scene.SceneAct as SceneAct
-import Vec (Vec(Vec), getY, getX)
+import Vec (Vec(Vec), getY, getX, (~-), divVec, convertVecInt)
 import Data.Time
 import Control.Concurrent (threadDelay)
 import SDL.Font ()
@@ -25,14 +25,15 @@ import Scene.Scene
 import Scene.SceneAct (setupScene)
 import Control.Lens
 import SoundRsc (SoundRsc(SoundRsc), withSoundRsc)
+import SDL (V2(..))
 
 
 
 main :: IO ()
-main = 
-  SDLWrapper.withSDL $ 
-  SDLWrapper.withSDLImage $ 
-  SDLWrapper.withSDLFont $ 
+main =
+  SDLWrapper.withSDL $
+  SDLWrapper.withSDLImage $
+  SDLWrapper.withSDLFont $
   SDLWrapper.withSDLMixer $ do
   SDLWrapper.setHintQuality
   let initialWindowSize = Vec 1280 (720 :: Int)
@@ -62,7 +63,7 @@ repeatUntil f p = go
 loopApp :: (MonadIO m) => Scene -> m Scene
 loopApp s = do
   controlFpsInApp $ do
-    input' <- InputState.readInput
+    input' <- InputState.readInput $ getScreenOffset s
     refreshApp s { _sceneEnv = (s^.env){ input = input' } }
 
 
@@ -73,7 +74,7 @@ controlFpsInApp process = do
   s' <- process
 
   loopEndTime <- liftIO getCurrentTime
-  
+
   let idealFps = fromIntegral $ currentBaseFps $ s' ^. env
   let idealDuration = 1000 * 1000 * ((1 :: Float) / idealFps)
 
@@ -99,20 +100,45 @@ applyIntent environ InputIntent.Quit = environ { exiting = True }
 applyIntent environ _ = environ
 
 
+readWindowSize :: (MonadIO m) => Environment -> m Environment
+readWindowSize environ = do
+  (V2 x y) <- get $ SDL.windowSize (window environ)
+  return environ {windowSize = Vec (fromIntegral x) (fromIntegral y)}
+
+
 refreshApp :: (MonadIO m) => Scene -> m Scene
 refreshApp s = do
-  let renderColor = SDL.rendererDrawColor r
+  let r = renderer $ s^.env
+      renderColor = SDL.rendererDrawColor r
   renderColor $= SDL.V4 100 100 100 255
 
   SDL.clear r
-  
-  env' <- applyIntents (s^.env) $ intents (input $ s^.env)
+
+  env' <- readWindowSize =<< applyIntents (s^.env) (intents (input $ s^.env))
   s' <- SceneAct.refreshScene s {_sceneEnv = env'}
+
+  SDL.copy r (s ^. (metaInfo . screenCanvas)) Nothing
+    $ Just $ getScreenAreaRect s'
 
   SDL.present r
 
   return s'
 
-  where
-    r = renderer $ s^.env
+
+getScreenOffset :: (HasEnv s Environment, HasMetaInfo s SceneMetaInfo) => s -> Vec Int
+getScreenOffset s = 
+  (windowSize (s^.env) ~- (s ^. (metaInfo . screenSize)))
+    `divVec` 2
+
+
+getScreenAreaRect :: (Num a, HasEnv s Environment, HasMetaInfo s SceneMetaInfo) => s -> SDL.Rectangle a
+getScreenAreaRect s = 
+  let scSize = s ^. (metaInfo . screenSize)
+      offset = getScreenOffset s
+  in SDLWrapper.makeRect
+      (fromIntegral $ getX offset)
+      (fromIntegral $ getY offset)
+      (fromIntegral $ getX scSize)
+      (fromIntegral $ getY scSize)
+
 

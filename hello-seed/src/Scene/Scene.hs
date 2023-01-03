@@ -23,6 +23,8 @@ import Control.Lens
 import qualified ConstParam
 import SoundRsc (SoundRsc)
 import qualified SDL.Mixer
+import SDLWrapper (SurTex)
+import SDL (PixelFormat(RGBA8888), TextureAccess (TextureAccessTarget), V2 (V2))
 
 
 data SceneState = Title | Playing deriving (Eq)
@@ -58,6 +60,7 @@ data SceneMetaInfo = SceneMetaInfo
   , _sceneFrame :: FrameCount
   , _playingRecord :: PlayingRecord
   , _screenSize :: VecInt
+  , _screenCanvas :: SDL.Texture
   }
 
 
@@ -119,12 +122,13 @@ initialEnv window' renderer' imageRsc' fontRsc' soundRsc' windowSize' = Environm
   }
 
 
-initialSceneMetaInfo :: VecInt -> SceneMetaInfo
-initialSceneMetaInfo screen = SceneMetaInfo
+initialSceneMetaInfo :: VecInt -> SDL.Texture -> SceneMetaInfo
+initialSceneMetaInfo screen canvas = SceneMetaInfo
   { _sceneState = Title
   , _sceneFrame = 0
   , _playingRecord = PlayingRecord{ _currScore=0, _highScore=0, _currLevel=1 }
   , _screenSize = screen
+  , _screenCanvas = canvas
   }
 
 
@@ -150,9 +154,11 @@ withScene :: MonadIO m => Environment -> VecInt -> (forall (m1 :: * -> *). (Mona
 withScene env' screenSize' ope =  (`runContT` return) $ do
   infoUI' <- ContT initialInfoUI
 
+  canvas <- SDL.createTexture (renderer env') RGBA8888 TextureAccessTarget (convertVecInt V2 screenSize')
+
   let scene = Scene
         { _sceneEnv = env'
-        , _sceneMetaInfo = initialSceneMetaInfo screenSize'
+        , _sceneMetaInfo = initialSceneMetaInfo screenSize' canvas
         , _sceneActorActList = []
         , _scenePlayer = initialPlayer screenSize'
         , _sceneBackground = initialBackground
@@ -163,6 +169,8 @@ withScene env' screenSize' ope =  (`runContT` return) $ do
         }
 
   ope scene
+
+  SDL.destroyTexture canvas
 
 
 initPlaying :: Scene -> Scene

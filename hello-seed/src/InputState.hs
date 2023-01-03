@@ -35,11 +35,10 @@ noInput = InputState
   }
 
 
-readInput :: (MonadIO m) => m InputState
-readInput = do
+readInput :: (MonadIO m) => VecInt -> m InputState
+readInput screenOffset = do
   pos <- SDL.Input.getAbsoluteMouseLocation
-  let pos' = convertP pos
-  let pos'' = convertV2 pos'
+  let pos' = convertV2 $ convertP pos
   
   button <- SDL.Input.getMouseButtons
 
@@ -47,7 +46,7 @@ readInput = do
 
   return InputState
     { mouse = MouseState
-        { mousePos = pos''
+        { mousePos = pos' ~- screenOffset
         , mouseButton = button
         }
     , intents = intents'

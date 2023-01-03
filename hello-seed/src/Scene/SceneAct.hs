@@ -22,6 +22,7 @@ import Control.Monad
 import Control.Lens
 import Scene.InterAct
 import SoundRsc (SoundRsc(game_start))
+import Data.StateVar (($=))
 
 
 
@@ -70,7 +71,7 @@ backgroundAct = ActorAct
   (ActorActive (const True))
   (ActorRenderIO renderBackground)
 
-  
+
 setupScene :: Scene -> Scene
 setupScene s =
   let acts =
@@ -88,12 +89,16 @@ setupScene s =
 
 refreshScene :: (MonadIO m) => Scene -> m Scene
 refreshScene s = do
+  let rendererTarget = SDL.rendererRenderTarget (renderer $ s^.env)
+  rendererTarget $= Just (s ^. (metaInfo . screenCanvas))
+
   let acts = filter (`applyActActive` s) $ s ^. actorActList
 
   s' <- liftIO $ foldlM (flip applyActUpdate) s acts
 
   liftIO $ forM_ acts (`applyActRender` s')
 
+  rendererTarget $= Nothing
   return s'
 
 

@@ -60,7 +60,9 @@ withWindow title (x, y) op = do
   SDL.destroyWindow w
 
     where
-      p = SDL.defaultWindow { SDL.windowInitialSize = z }
+      p = SDL.defaultWindow 
+          { SDL.windowInitialSize = z
+          , SDL.windowResizable = True }
       z = SDL.V2 (fromIntegral x) (fromIntegral y)
 
 
