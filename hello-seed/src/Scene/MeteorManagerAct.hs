@@ -66,16 +66,16 @@ checkUpgradeMeteorList s met =
   in if metManagerGenAble mm > 0 then met else case lv of
     1 -> if len < 5 then upgradeMeteorList 1 met else met
     2 -> if len < 10 then upgradeMeteorList 2 met else met
-    3 -> if len < 20 then upgradeMeteorList 4 met
-         else if len < 10 then upgradeMeteorList 2 met
-         else met
-    4 -> if len < 20 then upgradeMeteorList 5 met
-         else if len < 10 then upgradeMeteorList 3 met
-         else met
-    _ -> if len < 30 then upgradeMeteorList 7 met
+    3 -> if len < 40 then upgradeMeteorList 4 met
+         else if len < 20 then upgradeMeteorList 2 met
+         else upgradeMeteorList 1 met
+    4 -> if len < 40 then upgradeMeteorList 5 met
+         else if len < 20 then upgradeMeteorList 3 met
+         else upgradeMeteorList 1 met
+    _ -> if len < 40 then upgradeMeteorList 7 met
          else if len < 20 then upgradeMeteorList 5 met
          else if len < 10 then upgradeMeteorList 3 met
-         else met
+         else upgradeMeteorList 1 met
 
 
 upgradeMeteorList :: Int -> [Meteor] -> [Meteor]
