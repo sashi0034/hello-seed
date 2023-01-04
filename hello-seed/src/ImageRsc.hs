@@ -27,6 +27,7 @@ data ImageRsc = ImageRsc
   , gorilla_24x24 :: SDL.Texture
   , logo_hungry :: SDL.Texture
   , logo_stuffed :: SDL.Texture
+  , window_bg :: SDL.Texture
   }
 
 
@@ -64,7 +65,8 @@ withImageRsc r op =
   SDLWrapper.withTexture r "./assets/images/bg_d.jpg" $ \bg_d' ->
 
   SDLWrapper.withTexture r "./assets/images/logo_hungry.png" $ \logo_hungry' ->   
-  SDLWrapper.withTexture r "./assets/images/logo_stuffed.png" $ \logo_stuffed' ->   
+  SDLWrapper.withTexture r "./assets/images/logo_stuffed.png" $ \logo_stuffed' -> 
+  SDLWrapper.withTexture r "./assets/images/window_bg.jpg" $ \window_bg' -> 
 
     void $ op (ImageRsc 
       { blobwob_24x24 = blobwob_24x24'
@@ -82,6 +84,7 @@ withImageRsc r op =
       , logo_hungry = logo_hungry'
       , logo_stuffed = logo_stuffed'
       , gorilla_24x24 = gorilla_24x24'
+      , window_bg = window_bg'
       })
 
 

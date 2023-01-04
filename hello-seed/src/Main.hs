@@ -117,6 +117,8 @@ refreshApp s = do
   env' <- readWindowSize =<< applyIntents (s^.env) (intents (input $ s^.env))
   s' <- SceneAct.refreshScene s {_sceneEnv = env'}
 
+  SDL.copy r (window_bg $ imageRsc $ s ^. env) Nothing Nothing
+
   SDL.copy r (s ^. (metaInfo . screenCanvas)) Nothing
     $ Just $ getScreenAreaRect s'
 
