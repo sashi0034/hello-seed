@@ -25,9 +25,12 @@ import Scene.Scene
 import Scene.SceneAct (setupScene)
 import Control.Lens
 import SoundRsc (SoundRsc(SoundRsc), withSoundRsc)
-import SDL (V2(..))
+import SDL (V2(..), Surface (Surface))
 import ConstParam (gameTitleName)
 import Data.Text (pack)
+import qualified SDL.Image
+import qualified SDL.Raw
+import SDL.Internal.Types (Window(..))
 
 
 
@@ -46,11 +49,20 @@ main =
     ImageRsc.withFontRsc $ \fontRsc' ->
     SoundRsc.withSoundRsc $ \soundRsc' ->
     Scene.withScene
-        (Scene.initialEnv w r imageRsc' fontRsc' soundRsc' initialWindowSize)
-        initialWindowSize
+      (Scene.initialEnv w r imageRsc' fontRsc' soundRsc' initialWindowSize)
+      initialWindowSize
       $ \s -> do
 
+    icon <- SDL.Image.load "./assets/images/icon.png"
+    setWindowIcon w icon
+
     runApp loopApp (setupScene s)
+
+
+-- sdl2の今使用中のバージョンにまだsetWindowIconが入っていなさそうなので無理やり挿入
+setWindowIcon :: MonadIO m => SDL.Window -> SDL.Surface -> m ()
+setWindowIcon (Window win) (Surface sur _) =
+  SDL.Raw.setWindowIcon win sur
 
 
 runApp :: (Monad m) => (Scene -> m Scene) -> Scene -> m ()
