@@ -20,6 +20,7 @@ import qualified SDLWrapper
 import qualified SDL.Primitive
 import Linear
 import AnimUtil (degToRad, convertRGB)
+import ConstParam (gameTitleName)
 
 
 
@@ -72,7 +73,7 @@ renderInfoUI s = do
     -- Title
     (isSceneState Title s)
     $ do
-      renderText s "Full Up Blobwov" (textTitle ui)
+      renderText s ConstParam.gameTitleName (textTitle ui)
         ((s ^. (metaInfo . screenSize)) `divVec` 2)
         MiddleCenter $ Header $ SDL.V4 200 255 80 255
       renderText s "Press Left Click To Start" (textTitlePas ui)

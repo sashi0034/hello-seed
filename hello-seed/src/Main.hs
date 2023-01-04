@@ -26,6 +26,7 @@ import Scene.SceneAct (setupScene)
 import Control.Lens
 import SoundRsc (SoundRsc(SoundRsc), withSoundRsc)
 import SDL (V2(..))
+import ConstParam (gameTitleName)
 
 
 
@@ -38,7 +39,7 @@ main =
   SDLWrapper.setHintQuality
   let initialWindowSize = Vec 1280 (720 :: Int)
 
-  SDLWrapper.withWindow "Haskell Test" (getX initialWindowSize, getY initialWindowSize) $ \w ->
+  SDLWrapper.withWindow ConstParam.gameTitleName (getX initialWindowSize, getY initialWindowSize) $ \w ->
     SDLWrapper.withRenderer w $ \r ->
     ImageRsc.withImageRsc r $ \imageRsc' ->
     ImageRsc.withFontRsc $ \fontRsc' ->

@@ -1,10 +1,14 @@
 
 module ConstParam 
-( maxPlayerFullness
+( gameTitleName
+, maxPlayerFullness
 , playerPacmanTime
 , maxHarvestChargingCount
 , initialLevel
 ) where
+
+
+gameTitleName = "Full Up Blobwov"
 
 
 maxPlayerFullness :: Int
