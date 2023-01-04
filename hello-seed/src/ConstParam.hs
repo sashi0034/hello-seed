@@ -8,7 +8,8 @@ module ConstParam
 ) where
 
 
-gameTitleName = "Full Up Blobwov"
+gameTitleName :: [Char]
+gameTitleName = "Full Up Blobwob"
 
 
 maxPlayerFullness :: Int
